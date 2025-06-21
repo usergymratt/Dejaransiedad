@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía para Vencer la Ansiedad por Comer</title>
+    <!-- Chosen Palette: Calma Terrenal (Fondo #FDFBF8, Acentos #A88B79, #70877F, #DDBEA9, Texto #3D405B) -->
+    <!-- Application Structure Plan: He diseñado la aplicación en cinco secciones temáticas navegables para guiar al usuario en un viaje de descubrimiento y acción. 1) 'Inicio' para captar la atención. 2) '¿Por Qué Ocurre?' para educar sobre la ciencia de forma visual. 3) 'Plan de Acción' como el núcleo práctico, dividido en pilares. 4) 'Caja de Herramientas' como un recurso rápido y consultable. 5) 'Tu Camino' para consolidar el aprendizaje y fomentar la sostenibilidad. Esta estructura no lineal es superior a un documento porque permite al usuario acceder directamente a la información que necesita (p. ej., una alternativa a un antojo) sin tener que leer todo el contenido, mejorando la usabilidad y la aplicación práctica de los consejos. -->
+    <!-- Visualization & Content Choices: 1) Hambre Física vs. Emocional: Un comparador interactivo de tarjetas (HTML/CSS) para facilitar la memorización de las diferencias. 2) Cascada Hormonal: Un diagrama de nodos interactivos (JS) para simplificar un proceso biológico complejo. 3) Ciclo Ansiedad-Antojo: Un gráfico de dona (Chart.js) para representar visualmente el concepto central de "ciclo". 4) Listas de Alimentos: Pestañas y tarjetas interactivas para organizar la información de forma clara y accesible. 5) Plan por Niveles: Un acordeón interactivo para presentar el plan de forma gradual y evitar abrumar al usuario. Estas elecciones transforman el texto denso en herramientas interactivas que fomentan la exploración y el aprendizaje activo. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF8;
+            color: #3D405B;
+        }
+        .nav-link {
+            transition: color 0.3s ease, border-bottom-color 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #A88B79;
+            border-bottom-color: #A88B79;
+        }
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header id="header" class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="#" class="text-xl font-bold text-[#A88B79]">Guía Bienestar</a>
+            <div class="hidden md:flex space-x-8">
+                <a href="#por-que" class="nav-link pb-1">¿Por Qué Ocurre?</a>
+                <a href="#plan" class="nav-link pb-1">Plan de Acción</a>
+                <a href="#herramientas" class="nav-link pb-1">Herramientas</a>
+                <a href="#tu-camino" class="nav-link pb-1">Tu Camino</a>
+            </div>
+            <button id="mobile-menu-button" class="md:hidden p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#A88B79]">
+                 <span class="text-2xl">☰</span>
+            </button>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden px-6 pt-2 pb-4 space-y-2">
+             <a href="#por-que" class="block nav-link">¿Por Qué Ocurre?</a>
+             <a href="#plan" class="block nav-link">Plan de Acción</a>
+             <a href="#herramientas" class="block nav-link">Herramientas</a>
+             <a href="#tu-camino" class="block nav-link">Tu Camino</a>
+        </div>
+    </header>
+
+    <main>
+        <section id="inicio" class="py-20 md:py-32">
+            <div class="container mx-auto px-6 text-center">
+                <h1 class="text-4xl md:text-6xl font-bold mb-4">Rompe el ciclo de la ansiedad por comer.</h1>
+                <p class="text-lg md:text-xl max-w-3xl mx-auto text-gray-600">Descubre por qué sientes esos antojos incontrolables de dulces y carbohidratos, y encuentra las herramientas basadas en ciencia para recuperar el control, sin culpas ni dietas extremas.</p>
+                <a href="#por-que" class="mt-8 inline-block bg-[#A88B79] text-white font-bold py-3 px-8 rounded-full hover:bg-[#937766] transition-colors">Empezar a Entender</a>
+            </div>
+        </section>
+
+        <section id="por-que" class="py-16 bg-[#F7F2ED]">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold">¿Por Qué Ocurre? La Ciencia Detrás del Antojo</h2>
+                    <p class="mt-4 max-w-3xl mx-auto text-gray-600">Tus antojos no son un fallo de voluntad, son una respuesta biológica. Comprender qué pasa en tu cuerpo es el primer paso para cambiarlo. Aquí te explicamos los mecanismos clave de una forma sencilla e interactiva.</p>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-8 items-start">
+                    <div class="card bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="text-2xl font-bold mb-4 text-center">Hambre Física vs. Hambre Emocional</h3>
+                        <p class="mb-6 text-center text-gray-600">Aprender a diferenciarlas es tu superpoder. Usa esta guía para saber qué te pide realmente tu cuerpo.</p>
+                        <div class="grid grid-cols-2 gap-4 text-center">
+                            <div>
+                                <h4 class="font-bold text-lg mb-2 text-[#70877F]">Hambre Física</h4>
+                                <ul class="text-left space-y-2 text-sm text-gray-600">
+                                    <li class="flex items-start"><span class="mr-2 text-[#70877F]">✓</span>Aparece gradualmente.</li>
+                                    <li class="flex items-start"><span class="mr-2 text-[#70877F]">✓</span>Puede esperar.</li>
+                                    <li class="flex items-start"><span class="mr-2 text-[#70877F]">✓</span>Se satisface con varios alimentos.</li>
+                                    <li class="flex items-start"><span class="mr-2 text-[#70877F]">✓</span>Proviene del estómago.</li>
+                                    <li class="flex items-start"><span class="mr-2 text-[#70877F]">✓</span>Termina con saciedad.</li>
+                                    <li class="flex items-start"><span class="mr-2 text-[#70877F]">✓</span>No genera culpa.</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-lg mb-2 text-[#DDBEA9]">Hambre Emocional</h4>
+                                 <ul class="text-left space-y-2 text-sm text-gray-600">
+                                    <li class="flex items-start"><span class="mr-2 text-[#DDBEA9]">✕</span>Es súbita y urgente.</li>
+                                    <li class="flex items-start"><span class="mr-2 text-[#DDBEA9]">✕</span>No puede esperar.</li>
+                                    <li class="flex items-start"><span class="mr-2 text-[#DDBEA9]">✕</span>Pide algo específico (dulce/frito).</li>
+                                    <li class="flex items-start"><span class="mr-2 text-[#DDBEA9]">✕</span>Proviene de la "cabeza".</li>
+                                    <li class="flex items-start"><span class="mr-2 text-[#DDBEA9]">✕</span>No se detiene con saciedad.</li>
+                                    <li class="flex items-start"><span class="mr-2 text-[#DDBEA9]">✕</span>Suele causar culpa.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card bg-white p-6 rounded-lg shadow-sm">
+                         <h3 class="text-2xl font-bold mb-4 text-center">La Cascada Hormonal de la Ansiedad</h3>
+                        <p class="mb-6 text-center text-gray-600">Cuando sientes ansiedad, tu cuerpo libera un cóctel de hormonas que "secuestran" tu apetito. Haz clic en cada hormona para entender su papel.</p>
+                        <div id="hormone-diagram" class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                               <button data-hormone="cortisol" class="hormone-btn p-3 bg-[#F7F2ED] rounded-lg text-center font-semibold hover:bg-[#DDBEA9] hover:text-white transition-colors">Cortisol</button>
+                               <button data-hormone="serotonina" class="hormone-btn p-3 bg-[#F7F2ED] rounded-lg text-center font-semibold hover:bg-[#DDBEA9] hover:text-white transition-colors">Serotonina</button>
+                               <button data-hormone="dopamina" class="hormone-btn p-3 bg-[#F7F2ED] rounded-lg text-center font-semibold hover:bg-[#DDBEA9] hover:text-white transition-colors">Dopamina</button>
+                               <button data-hormone="grelina" class="hormone-btn p-3 bg-[#F7F2ED] rounded-lg text-center font-semibold hover:bg-[#DDBEA9] hover:text-white transition-colors">Grelina/Leptina</button>
+                            </div>
+                            <div id="hormone-info" class="p-4 bg-gray-50 rounded-md min-h-[100px] text-sm text-gray-700">
+                                <p>Selecciona una hormona para ver su descripción.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-12 card bg-white p-6 rounded-lg shadow-sm">
+                    <h3 class="text-2xl font-bold mb-4 text-center">El Ciclo Vicioso: Ansiedad, Antojo, Culpa</h3>
+                    <p class="mb-6 text-center text-gray-600 max-w-2xl mx-auto">La ansiedad no solo provoca el antojo, sino que la culpa posterior alimenta más ansiedad, creando un bucle del que es difícil salir. Visualizarlo es el primer paso para romperlo.</p>
+                    <div class="chart-container">
+                        <canvas id="cycleChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="plan" class="py-16">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold">Tu Plan de Acción: 4 Pilares para el Cambio</h2>
+                    <p class="mt-4 max-w-3xl mx-auto text-gray-600">Recuperar el control es posible. Estas estrategias fundamentales, basadas en la ciencia, te ayudarán a restablecer el equilibrio de tu cuerpo y mente. Céntrate en un pilar a la vez para construir hábitos sólidos.</p>
+                </div>
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div class="card bg-white p-6 rounded-lg shadow-sm text-center">
+                        <div class="text-5xl mb-4">🍎</div>
+                        <h3 class="text-xl font-bold mb-2">Nutrición Estable</h3>
+                        <p class="text-gray-600 text-sm">Aprende a construir platos que te mantengan saciado y con energía estable, previniendo la montaña rusa del azúcar.</p>
+                    </div>
+                     <div class="card bg-white p-6 rounded-lg shadow-sm text-center">
+                        <div class="text-5xl mb-4">🏃‍♀️</div>
+                        <h3 class="text-xl font-bold mb-2">Movimiento Inteligente</h3>
+                        <p class="text-gray-600 text-sm">Usa el ejercicio como una herramienta poderosa para generar endorfinas y reducir el estrés, no como un castigo.</p>
+                    </div>
+                     <div class="card bg-white p-6 rounded-lg shadow-sm text-center">
+                        <div class="text-5xl mb-4">😴</div>
+                        <h3 class="text-xl font-bold mb-2">Descanso Reparador</h3>
+                        <p class="text-gray-600 text-sm">Prioriza el sueño para regular las hormonas del apetito (grelina y leptina) y mejorar tu estado de ánimo.</p>
+                    </div>
+                     <div class="card bg-white p-6 rounded-lg shadow-sm text-center">
+                        <div class="text-5xl mb-4">🧠</div>
+                        <h3 class="text-xl font-bold mb-2">Fortaleza Mental</h3>
+                        <p class="text-gray-600 text-sm">Practica la alimentación consciente e identifica tus detonantes emocionales para romper patrones automáticos.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="herramientas" class="py-16 bg-[#F7F2ED]">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold">Caja de Herramientas Prácticas</h2>
+                    <p class="mt-4 max-w-3xl mx-auto text-gray-600">Tener a mano las opciones correctas en el momento justo es clave. Explora esta sección para encontrar alimentos que te ayudan y alternativas saludables para cuando lleguen los antojos.</p>
+                </div>
+                
+                <div>
+                    <div class="flex justify-center border-b border-gray-300 mb-8">
+                        <button data-tab="aliados" class="tab-btn active py-2 px-6 font-semibold border-b-2 border-[#A88B79] text-[#A88B79]">Alimentos Aliados</button>
+                        <button data-tab="alternativas" class="tab-btn py-2 px-6 font-semibold text-gray-500 border-b-2 border-transparent">Alternativas Saludables</button>
+                        <button data-tab="suplementos" class="tab-btn py-2 px-6 font-semibold text-gray-500 border-b-2 border-transparent">Suplementos</button>
+                    </div>
+
+                    <div id="tab-content">
+                        <div id="aliados" class="tab-pane">
+                            <h3 class="text-2xl font-bold text-center mb-6">Estrellas de la Estabilización</h3>
+                            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 text-center">
+                                <div class="p-4 bg-white rounded-lg shadow-sm">Bayas</div>
+                                <div class="p-4 bg-white rounded-lg shadow-sm">Frutos Secos</div>
+                                <div class="p-4 bg-white rounded-lg shadow-sm">Yogur Griego</div>
+                                <div class="p-4 bg-white rounded-lg shadow-sm">Aguacate</div>
+                                <div class="p-4 bg-white rounded-lg shadow-sm">Chocolate Negro (+85%)</div>
+                                <div class="p-4 bg-white rounded-lg shadow-sm">Canela</div>
+                                <div class="p-4 bg-white rounded-lg shadow-sm">Semillas de Chía</div>
+                                <div class="p-4 bg-white rounded-lg shadow-sm">Legumbres</div>
+                                <div class="p-4 bg-white rounded-lg shadow-sm">Verduras de Hoja Verde</div>
+                                <div class="p-4 bg-white rounded-lg shadow-sm">Huevos</div>
+                                <div class="p-4 bg-white rounded-lg shadow-sm">Pescado Graso</div>
+                                <div class="p-4 bg-white rounded-lg shadow-sm">Brócoli</div>
+                            </div>
+                        </div>
+
+                        <div id="alternativas" class="tab-pane hidden">
+                             <h3 class="text-2xl font-bold text-center mb-6">Sustitutos Inteligentes para Antojos</h3>
+                             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div class="bg-white p-6 rounded-lg shadow-sm">
+                                    <h4 class="font-bold mb-2">Antojo de GOLOSINAS</h4>
+                                    <p class="text-gray-600">→ Una pieza de fruta, un par de dátiles, un trozo de chocolate negro, o fruta a la parrilla.</p>
+                                </div>
+                                <div class="bg-white p-6 rounded-lg shadow-sm">
+                                    <h4 class="font-bold mb-2">Antojo de HELADO</h4>
+                                    <p class="text-gray-600">→ Yogur griego con bayas, "helado" de plátano congelado y aguacate, o pudin de chía.</p>
+                                </div>
+                                <div class="bg-white p-6 rounded-lg shadow-sm">
+                                    <h4 class="font-bold mb-2">Antojo de BOLLERÍA</h4>
+                                    <p class="text-gray-600">→ Magdalenas caseras con harina de almendras, "bolitas energéticas" de avena y dátiles.</p>
+                                </div>
+                                <div class="bg-white p-6 rounded-lg shadow-sm">
+                                    <h4 class="font-bold mb-2">Antojo de BEBIDAS AZUCARADAS</h4>
+                                    <p class="text-gray-600">→ Agua con gas y limón, infusiones frías sin azúcar, o kombucha.</p>
+                                </div>
+                                <div class="bg-white p-6 rounded-lg shadow-sm">
+                                    <h4 class="font-bold mb-2">Antojo de ALGO CRUJIENTE</h4>
+                                    <p class="text-gray-600">→ Un puñado de frutos secos, chips de kale al horno, o palitos de zanahoria con hummus.</p>
+                                </div>
+                             </div>
+                        </div>
+
+                        <div id="suplementos" class="tab-pane hidden">
+                            <h3 class="text-2xl font-bold text-center mb-6">Apoyo Complementario</h3>
+                            <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md mb-6 max-w-3xl mx-auto">
+                                <p><strong class="font-bold">Advertencia:</strong> Consulta siempre a un profesional de la salud antes de tomar cualquier suplemento. No son soluciones mágicas y pueden tener interacciones.</p>
+                            </div>
+                             <div class="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                                <div class="bg-white p-6 rounded-lg shadow-sm">
+                                    <h4 class="font-bold mb-2">Para el Ánimo y la Ansiedad</h4>
+                                    <ul class="list-disc list-inside text-gray-600 space-y-1">
+                                        <li><strong>Magnesio:</strong> Vital para el sistema nervioso.</li>
+                                        <li><strong>Ashwagandha:</strong> Ayuda al cuerpo a gestionar el estrés.</li>
+                                        <li><strong>L-Teanina:</strong> Promueve la relajación sin somnolencia.</li>
+                                    </ul>
+                                </div>
+                                <div class="bg-white p-6 rounded-lg shadow-sm">
+                                    <h4 class="font-bold mb-2">Para el Apetito y Azúcar</h4>
+                                    <ul class="list-disc list-inside text-gray-600 space-y-1">
+                                        <li><strong>5-HTP:</strong> Precursor de la serotonina, aumenta la saciedad.</li>
+                                        <li><strong>Picolinato de Cromo:</strong> Ayuda a estabilizar el azúcar en sangre.</li>
+                                        <li><strong>Fibra (Glucomanano):</strong> Aumenta la sensación de plenitud.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tu-camino" class="py-16">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold">Construye Tu Camino Hacia el Bienestar</h2>
+                    <p class="mt-4 max-w-3xl mx-auto text-gray-600">El éxito a largo plazo no se trata de perfección, sino de progreso y resiliencia. Usa este plan para integrar los cambios de forma sostenible y aprende a reconocer cuándo es momento de buscar apoyo profesional.</p>
+                </div>
+
+                <div class="max-w-3xl mx-auto">
+                    <div id="plan-acordeon">
+                        <div class="border border-gray-200 rounded-lg mb-2">
+                            <button class="acordeon-btn w-full flex justify-between items-center p-4 font-semibold bg-gray-50 hover:bg-gray-100">
+                                <span>Nivel 1: Los Fundamentos (Empezar Aquí)</span>
+                                <span class="transform transition-transform duration-300">▼</span>
+                            </button>
+                            <div class="acordeon-content hidden p-4 text-gray-600 bg-white">
+                                <p>No intentes cambiarlo todo a la vez. Empieza aquí:</p>
+                                <ul class="list-disc list-inside mt-2 space-y-1">
+                                    <li><strong>Desayuno con Proteínas:</strong> Asegura un desayuno rico en proteínas cada día.</li>
+                                    <li><strong>Movimiento Diario:</strong> Incorpora una caminata de 15-30 minutos.</li>
+                                    <li><strong>Higiene del Sueño:</strong> Acuéstate y levántate a la misma hora y evita pantallas antes de dormir.</li>
+                                </ul>
+                            </div>
+                        </div>
+                         <div class="border border-gray-200 rounded-lg mb-2">
+                            <button class="acordeon-btn w-full flex justify-between items-center p-4 font-semibold bg-gray-50 hover:bg-gray-100">
+                                <span>Nivel 2: Habilidades Conductuales</span>
+                                <span class="transform transition-transform duration-300">▼</span>
+                            </button>
+                            <div class="acordeon-content hidden p-4 text-gray-600 bg-white">
+                                <p>Una vez dominados los fundamentos, añade estas habilidades:</p>
+                                <ul class="list-disc list-inside mt-2 space-y-1">
+                                    <li><strong>Diario de Emociones y Comida:</strong> Identifica qué situaciones o emociones disparan tus antojos.</li>
+                                    <li><strong>Alimentación Consciente:</strong> Practica comer una de tus comidas diarias sin distracciones, saboreando cada bocado.</li>
+                                    <li><strong>Planifica una Respuesta:</strong> Cuando identifiques un detonante, ten lista una actividad alternativa (llamar a un amigo, escuchar música, etc.).</li>
+                                </ul>
+                            </div>
+                        </div>
+                         <div class="border border-gray-200 rounded-lg">
+                            <button class="acordeon-btn w-full flex justify-between items-center p-4 font-semibold bg-gray-50 hover:bg-gray-100">
+                                <span>Nivel 3: Ajustes y Apoyo Profesional</span>
+                                <span class="transform transition-transform duration-300">▼</span>
+                            </button>
+                            <div class="acordeon-content hidden p-4 text-gray-600 bg-white">
+                                <p>Recuerda que no estás solo. Es hora de buscar ayuda si:</p>
+                                <ul class="list-disc list-inside mt-2 space-y-1">
+                                    <li>Sientes que el comportamiento está fuera de control.</li>
+                                    <li>La ansiedad es severa e interfiere con tu vida diaria.</li>
+                                    <li>Sospechas que puedes tener un trastorno de la conducta alimentaria.</li>
+                                </ul>
+                                <p class="mt-4">Un <strong>psicólogo</strong> puede ayudarte con la parte emocional y un <strong>dietista-nutricionista</strong> con un plan de alimentación personalizado.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-[#3D405B] text-white py-8">
+        <div class="container mx-auto px-6 text-center">
+            <p>Esta es una guía informativa y no reemplaza el consejo médico profesional.</p>
+            <p class="text-sm mt-2 text-gray-400">&copy; 2025 Guía Bienestar. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            const mobileLinks = mobileMenu.querySelectorAll('a');
+            mobileLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                });
+            });
+
+            const hormoneData = {
+                cortisol: {
+                    title: 'Cortisol (La Hormona del Estrés)',
+                    text: 'En estrés crónico, el cortisol se mantiene alto, pidiendo energía rápida en forma de azúcar y grasa. Aumenta el apetito por alimentos calóricos y sabrosos.'
+                },
+                serotonina: {
+                    title: 'Serotonina (El Estabilizador del Ánimo)',
+                    text: 'Niveles bajos de serotonina provocan antojos de carbohidratos, ya que el cuerpo intenta "automedicarse" para facilitar la producción de este neurotransmisor del bienestar.'
+                },
+                dopamina: {
+                    title: 'Dopamina (La Recompensa)',
+                    text: 'El azúcar provoca una gran liberación de dopamina, generando placer. El cerebro aprende a buscar esa "recompensa" rápida cuando te sientes mal, creando un hábito.'
+                },
+                grelina: {
+                    title: 'Grelina/Leptina (Reguladores del Apetito)',
+                    text: 'La falta de sueño (común en la ansiedad) aumenta la grelina (hambre) y disminuye la leptina (saciedad). El resultado: más hambre y dificultad para sentirse lleno.'
+                }
+            };
+            
+            const hormoneBtns = document.querySelectorAll('.hormone-btn');
+            const hormoneInfo = document.getElementById('hormone-info');
+            
+            hormoneBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const hormoneKey = btn.dataset.hormone;
+                    const data = hormoneData[hormoneKey];
+                    hormoneInfo.innerHTML = `<h5 class="font-bold mb-1">${data.title}</h5><p>${data.text}</p>`;
+                    
+                    hormoneBtns.forEach(b => b.classList.remove('bg-[#A88B79]', 'text-white'));
+                    btn.classList.add('bg-[#A88B79]', 'text-white');
+                });
+            });
+
+            const cycleCtx = document.getElementById('cycleChart').getContext('2d');
+            const cycleChart = new Chart(cycleCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['1. Ansiedad / Estrés', '2. Antojo de Azúcar', '3. Ingesta Compulsiva', '4. Culpa y Arrepentimiento'],
+                    datasets: [{
+                        label: 'El Ciclo Vicioso',
+                        data: [25, 25, 25, 25],
+                        backgroundColor: [
+                            '#DDBEA9', 
+                            '#A88B79', 
+                            '#70877F', 
+                            '#B7B7A4'  
+                        ],
+                        borderColor: '#F7F2ED',
+                        borderWidth: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                             labels: {
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    const descriptions = [
+                                        "Una emoción negativa (estrés, tristeza, aburrimiento) actúa como detonante.",
+                                        "El cerebro busca una solución rápida y placentera para aliviar el malestar.",
+                                        "Se come el alimento deseado, a menudo de forma rápida y sin control.",
+                                        "Tras la ingesta, aparecen sentimientos negativos que aumentan el estrés y reinician el ciclo."
+                                    ];
+                                    return descriptions[context.dataIndex];
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabPanes = document.querySelectorAll('.tab-pane');
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    tabBtns.forEach(b => {
+                        b.classList.remove('active', 'border-[#A88B79]', 'text-[#A88B79]');
+                        b.classList.add('text-gray-500', 'border-transparent');
+                    });
+                    btn.classList.add('active', 'border-[#A88B79]', 'text-[#A88B79]');
+                    btn.classList.remove('text-gray-500', 'border-transparent');
+                    
+                    const tabId = btn.dataset.tab;
+                    tabPanes.forEach(pane => {
+                        if (pane.id === tabId) {
+                            pane.classList.remove('hidden');
+                        } else {
+                            pane.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+            const acordeonBtns = document.querySelectorAll('.acordeon-btn');
+            acordeonBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const content = btn.nextElementSibling;
+                    const icon = btn.querySelector('span:last-child');
+                    
+                    const isOpen = !content.classList.contains('hidden');
+
+                    document.querySelectorAll('.acordeon-content').forEach(c => c.classList.add('hidden'));
+                    document.querySelectorAll('.acordeon-btn span:last-child').forEach(i => i.classList.remove('rotate-180'));
+
+                    if (!isOpen) {
+                        content.classList.remove('hidden');
+                        icon.classList.add('rotate-180');
+                    }
+                });
+            });
+            
+            const header = document.getElementById('header');
+            const sections = document.querySelectorAll('main section');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: `-${header.offsetHeight}px 0px 0px 0px`,
+                threshold: 0.4
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        navLinks.forEach(link => {
+                           link.classList.remove('active');
+                           if(link.getAttribute('href') === `#${id}`) {
+                               link.classList.add('active');
+                           }
+                        });
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+        });
+    </script>
+</body>
+</html>
