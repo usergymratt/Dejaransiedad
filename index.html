@@ -1,500 +1,452 @@
 <!DOCTYPE html>
-<html lang="es" class="scroll-smooth">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guía para Vencer la Ansiedad por Comer</title>
-    <!-- Chosen Palette: Calma Terrenal (Fondo #FDFBF8, Acentos #A88B79, #70877F, #DDBEA9, Texto #3D405B) -->
-    <!-- Application Structure Plan: He diseñado la aplicación en cinco secciones temáticas navegables para guiar al usuario en un viaje de descubrimiento y acción. 1) 'Inicio' para captar la atención. 2) '¿Por Qué Ocurre?' para educar sobre la ciencia de forma visual. 3) 'Plan de Acción' como el núcleo práctico, dividido en pilares. 4) 'Caja de Herramientas' como un recurso rápido y consultable. 5) 'Tu Camino' para consolidar el aprendizaje y fomentar la sostenibilidad. Esta estructura no lineal es superior a un documento porque permite al usuario acceder directamente a la información que necesita (p. ej., una alternativa a un antojo) sin tener que leer todo el contenido, mejorando la usabilidad y la aplicación práctica de los consejos. -->
-    <!-- Visualization & Content Choices: 1) Hambre Física vs. Emocional: Un comparador interactivo de tarjetas (HTML/CSS) para facilitar la memorización de las diferencias. 2) Cascada Hormonal: Un diagrama de nodos interactivos (JS) para simplificar un proceso biológico complejo. 3) Ciclo Ansiedad-Antojo: Un gráfico de dona (Chart.js) para representar visualmente el concepto central de "ciclo". 4) Listas de Alimentos: Pestañas y tarjetas interactivas para organizar la información de forma clara y accesible. 5) Plan por Niveles: Un acordeón interactivo para presentar el plan de forma gradual y evitar abrumar al usuario. Estas elecciones transforman el texto denso en herramientas interactivas que fomentan la exploración y el aprendizaje activo. -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <title>Plan Pro Daniel Ramírez - Final Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Librería para escanear códigos de barras -->
+    <script type="text/javascript" src="https://unpkg.com/@zxing/library@latest/umd/index.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
-        body {
+        :root { --main-red: #dc2626; --dark-bg: #101010; --card-bg-opaque: #181818; --card-bg-translucent: rgba(24, 24, 24, 0.85); --text-light: #e5e5e5; --text-dark: #a3a3a3; }
+        body { 
             font-family: 'Inter', sans-serif;
-            background-color: #FDFBF8;
-            color: #3D405B;
+            background-image: linear-gradient(rgba(16, 16, 16, 0.9), rgba(16, 16, 16, 0.9)), url('https://images.pexels.com/photos/4164763/pexels-photo-4164763.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');
+            background-size: cover;
+            background-position: center center;
+            background-attachment: fixed;
+            color: var(--text-light);
         }
-        .nav-link {
-            transition: color 0.3s ease, border-bottom-color 0.3s ease;
-            border-bottom: 2px solid transparent;
+        .nav-link.active { background-color: var(--main-red); color: white; }
+        .nav-link:not(.active) { color: var(--text-dark); hover:bg-gray-800; }
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+        .chart-container { position: relative; margin: auto; height: 280px; width: 280px; }
+        @media (min-width: 640px) { .chart-container { height: 320px; width: 320px; } }
+        .workout-day-btn.active { background-color: var(--main-red); color: white; }
+        .workout-day-btn:not(.active) { background-color: #262626; color: var(--text-dark); hover:bg-gray-700; border-color: #404040; }
+        .card { 
+            background-color: var(--card-bg-translucent); 
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid #262626; 
+            border-radius: 0.75rem; 
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1); 
+            padding: 1.5rem; 
+            transition: all 0.3s; 
         }
-        .nav-link:hover, .nav-link.active {
-            color: #A88B79;
-            border-bottom-color: #A88B79;
-        }
-        .card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
-        }
-        .chart-container {
-            position: relative;
+        .card:hover { border-color: var(--main-red); }
+        .nav-link-mobile.active { border-top: 2px solid var(--main-red); color: var(--main-red); }
+        .nav-link-mobile.active > span { color: var(--main-red); font-weight: 600; }
+        .form-input { background-color: #262626; border: 1px solid #404040; border-radius: 0.375rem; padding: 0.5rem 0.75rem; color: var(--text-light); placeholder-color: var(--text-dark); }
+        .form-input:focus { outline: none; ring: 2px; ring-color: var(--main-red); border-color: var(--main-red); }
+        .btn-primary { background-color: var(--main-red); color: white; font-weight: bold; padding: 0.5rem 1rem; border-radius: 0.375rem; transition: background-color 0.2s; cursor: pointer; }
+        .btn-primary:hover { background-color: #b91c1c; }
+        .btn-danger { background-color: #991b1b; color: white; padding: 0.25rem 0.5rem; font-size: 0.75rem; border-radius: 0.25rem; }
+        .btn-danger:hover { background-color: #7f1d1d; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--main-red); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .progress-bar-bg { background-color: #262626; border-radius: 0.375rem; overflow: hidden; }
+        .progress-bar { background-color: var(--main-red); height: 100%; transition: width 0.5s ease-in-out; }
+        
+        /* Estilos para el modal del escáner */
+        #barcode-scanner-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
             width: 100%;
-            max-width: 400px;
-            margin-left: auto;
-            margin-right: auto;
-            height: 350px;
-            max-height: 400px;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+        .scanner-container {
+            position: relative;
+            margin: auto;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 90%;
+            max-width: 640px;
+            padding: 20px;
+            background: var(--card-bg-opaque);
+            border-radius: 0.75rem;
+            border: 1px solid #262626;
+        }
+        #video-scanner {
+            width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
         }
     </style>
 </head>
 <body class="antialiased">
-
-    <header id="header" class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
-        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
-            <a href="#" class="text-xl font-bold text-[#A88B79]">Guía Bienestar</a>
-            <div class="hidden md:flex space-x-8">
-                <a href="#por-que" class="nav-link pb-1">¿Por Qué Ocurre?</a>
-                <a href="#plan" class="nav-link pb-1">Plan de Acción</a>
-                <a href="#herramientas" class="nav-link pb-1">Herramientas</a>
-                <a href="#tu-camino" class="nav-link pb-1">Tu Camino</a>
-            </div>
-            <button id="mobile-menu-button" class="md:hidden p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#A88B79]">
-                 <span class="text-2xl">☰</span>
-            </button>
-        </nav>
-        <div id="mobile-menu" class="hidden md:hidden px-6 pt-2 pb-4 space-y-2">
-             <a href="#por-que" class="block nav-link">¿Por Qué Ocurre?</a>
-             <a href="#plan" class="block nav-link">Plan de Acción</a>
-             <a href="#herramientas" class="block nav-link">Herramientas</a>
-             <a href="#tu-camino" class="block nav-link">Tu Camino</a>
+    <div id="barcode-scanner-modal">
+        <div class="scanner-container">
+            <h3 class="text-xl font-bold text-center text-white mb-4">Apunta al código de barras</h3>
+            <video id="video-scanner"></video>
+            <button id="close-scanner-btn" class="btn-primary w-full mt-4">Cancelar</button>
         </div>
-    </header>
+    </div>
 
-    <main>
-        <section id="inicio" class="py-20 md:py-32">
-            <div class="container mx-auto px-6 text-center">
-                <h1 class="text-4xl md:text-6xl font-bold mb-4">Rompe el ciclo de la ansiedad por comer.</h1>
-                <p class="text-lg md:text-xl max-w-3xl mx-auto text-gray-600">Descubre por qué sientes esos antojos incontrolables de dulces y carbohidratos, y encuentra las herramientas basadas en ciencia para recuperar el control, sin culpas ni dietas extremas.</p>
-                <a href="#por-que" class="mt-8 inline-block bg-[#A88B79] text-white font-bold py-3 px-8 rounded-full hover:bg-[#937766] transition-colors">Empezar a Entender</a>
-            </div>
-        </section>
-
-        <section id="por-que" class="py-16 bg-[#F7F2ED]">
-            <div class="container mx-auto px-6">
-                <div class="text-center mb-12">
-                    <h2 class="text-3xl md:text-4xl font-bold">¿Por Qué Ocurre? La Ciencia Detrás del Antojo</h2>
-                    <p class="mt-4 max-w-3xl mx-auto text-gray-600">Tus antojos no son un fallo de voluntad, son una respuesta biológica. Comprender qué pasa en tu cuerpo es el primer paso para cambiarlo. Aquí te explicamos los mecanismos clave de una forma sencilla e interactiva.</p>
+    <div class="min-h-screen pb-16 md:pb-0">
+        <header class="bg-black/50 backdrop-blur-md shadow-lg sticky top-0 z-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <div class="flex items-center">
+                        <span class="text-2xl font-bold" style="color: var(--main-red);">🔥</span>
+                        <h1 class="ml-3 text-xl font-bold tracking-tight">Plan Pro Daniel Ramírez</h1>
+                    </div>
+                    <nav class="hidden md:flex space-x-2" id="main-nav">
+                        <a href="#" data-tab="resumen" class="nav-link active px-3 py-2 rounded-md text-sm font-medium">Resumen</a>
+                        <a href="#" data-tab="fit-ai" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Fit-AI</a>
+                        <a href="#" data-tab="nutricion" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Nutrición</a>
+                        <a href="#" data-tab="entrenamiento" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Entrenamiento</a>
+                        <a href="#" data-tab="progreso" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Progreso</a>
+                        <a href="#" data-tab="recursos" class="nav-link px-3 py-2 rounded-md text-sm font-medium">Recursos</a>
+                    </nav>
                 </div>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <div class="px-4 py-6 sm:px-0">
+                <section id="resumen" class="content-section active">
+                    <div class="text-center mb-10"><h2 class="text-3xl font-bold tracking-tight sm:text-4xl text-transparent bg-clip-text bg-gradient-to-r from-white to-red-400">Tu Panel de Control</h2><p class="mt-4 text-lg text-gray-400">Objetivos nutricionales para máxima definición.</p></div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                        <div class="flex flex-col items-center"><div class="chart-container"><canvas id="macroChart"></canvas></div></div>
+                        <div class="space-y-6">
+                            <div class="card text-center"><h3 class="text-lg font-semibold text-gray-500">Calorías Totales</h3><p id="total-calorias" class="text-5xl font-bold text-white">2270</p><p class="text-sm text-gray-400">kcal/día</p></div>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div class="card text-center"><h4 class="text-md font-semibold text-red-500">Proteínas</h4><p id="gramos-proteina" class="text-3xl font-bold">225g</p></div>
+                                <div class="card text-center"><h4 class="text-md font-semibold text-gray-300">Carbs</h4><p id="gramos-carbs" class="text-3xl font-bold">200g</p></div>
+                                <div class="card text-center"><h4 class="text-md font-semibold text-gray-500">Grasas</h4><p id="gramos-grasas" class="text-3xl font-bold">63g</p></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="fit-ai" class="content-section">
+                    <div class="text-center mb-10">
+                        <h2 class="text-3xl font-bold tracking-tight sm:text-4xl">🤖 Tu Asistente Nutricional</h2>
+                        <p class="mt-4 text-lg text-gray-400">Busca recetas, escanea productos o analiza tus comidas con una foto.</p>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+                         <div class="card space-y-4">
+                            <h3 class="text-xl font-bold text-center text-red-500">Buscar Receta</h3>
+                            <input type="search" id="recipe-search-input" placeholder="Ej: Pollo, arroz, avena..." class="form-input w-full">
+                            <div id="recipe-search-results" class="space-y-2 max-h-40 overflow-y-auto"></div>
+                        </div>
+                        <div class="card space-y-4 flex flex-col justify-center items-center text-center">
+                            <h3 class="text-xl font-bold text-red-500">Escanear Producto</h3>
+                            <p class="text-sm text-gray-400 flex-grow">Usa tu cámara para obtener la información nutricional de un producto al instante.</p>
+                            <button id="scan-barcode-btn" class="btn-primary w-full mt-4">📷 Escanear Código</button>
+                        </div>
+                        <div class="card space-y-4">
+                            <h3 class="text-xl font-bold text-center text-red-500">Analizar Comida (IA)</h3>
+                            <input type="file" id="food-image-input" accept="image/*" class="form-input w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-900 file:text-red-100 hover:file:bg-red-800">
+                            <button id="analyze-image-btn" class="btn-primary w-full">🖼️ Analizar Imagen</button>
+                            <img id="image-preview" src="" class="hidden w-full max-w-xs mx-auto rounded-lg mt-4"/>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="card space-y-4">
+                            <h3 class="text-xl font-bold text-center">Resultado del Análisis</h3>
+                            <div id="ai-result-loader" class="hidden justify-center items-center py-8"><div class="loader"></div></div>
+                            <div id="ai-result-content" class="text-center text-gray-400">Selecciona una herramienta para empezar.</div>
+                        </div>
+                        <div class="card space-y-4">
+                            <h3 class="text-xl font-bold text-center">Tu Consumo de Hoy</h3>
+                            <div id="daily-log-progress"></div>
+                            <div class="flex justify-between items-center">
+                                <h4 class="text-lg font-semibold">Comidas Registradas</h4>
+                                <button id="clear-log-btn" class="btn-danger">Limpiar</button>
+                            </div>
+                            <div id="daily-log-history" class="space-y-3 overflow-auto max-h-60 pr-2"></div>
+                        </div>
+                    </div>
+                </section>
                 
-                <div class="grid md:grid-cols-2 gap-8 items-start">
-                    <div class="card bg-white p-6 rounded-lg shadow-sm">
-                        <h3 class="text-2xl font-bold mb-4 text-center">Hambre Física vs. Hambre Emocional</h3>
-                        <p class="mb-6 text-center text-gray-600">Aprender a diferenciarlas es tu superpoder. Usa esta guía para saber qué te pide realmente tu cuerpo.</p>
-                        <div class="grid grid-cols-2 gap-4 text-center">
-                            <div>
-                                <h4 class="font-bold text-lg mb-2 text-[#70877F]">Hambre Física</h4>
-                                <ul class="text-left space-y-2 text-sm text-gray-600">
-                                    <li class="flex items-start"><span class="mr-2 text-[#70877F]">✓</span>Aparece gradualmente.</li>
-                                    <li class="flex items-start"><span class="mr-2 text-[#70877F]">✓</span>Puede esperar.</li>
-                                    <li class="flex items-start"><span class="mr-2 text-[#70877F]">✓</span>Se satisface con varios alimentos.</li>
-                                    <li class="flex items-start"><span class="mr-2 text-[#70877F]">✓</span>Proviene del estómago.</li>
-                                    <li class="flex items-start"><span class="mr-2 text-[#70877F]">✓</span>Termina con saciedad.</li>
-                                    <li class="flex items-start"><span class="mr-2 text-[#70877F]">✓</span>No genera culpa.</li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-lg mb-2 text-[#DDBEA9]">Hambre Emocional</h4>
-                                 <ul class="text-left space-y-2 text-sm text-gray-600">
-                                    <li class="flex items-start"><span class="mr-2 text-[#DDBEA9]">✕</span>Es súbita y urgente.</li>
-                                    <li class="flex items-start"><span class="mr-2 text-[#DDBEA9]">✕</span>No puede esperar.</li>
-                                    <li class="flex items-start"><span class="mr-2 text-[#DDBEA9]">✕</span>Pide algo específico (dulce/frito).</li>
-                                    <li class="flex items-start"><span class="mr-2 text-[#DDBEA9]">✕</span>Proviene de la "cabeza".</li>
-                                    <li class="flex items-start"><span class="mr-2 text-[#DDBEA9]">✕</span>No se detiene con saciedad.</li>
-                                    <li class="flex items-start"><span class="mr-2 text-[#DDBEA9]">✕</span>Suele causar culpa.</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card bg-white p-6 rounded-lg shadow-sm">
-                         <h3 class="text-2xl font-bold mb-4 text-center">La Cascada Hormonal de la Ansiedad</h3>
-                        <p class="mb-6 text-center text-gray-600">Cuando sientes ansiedad, tu cuerpo libera un cóctel de hormonas que "secuestran" tu apetito. Haz clic en cada hormona para entender su papel.</p>
-                        <div id="hormone-diagram" class="space-y-4">
-                            <div class="grid grid-cols-2 gap-4">
-                               <button data-hormone="cortisol" class="hormone-btn p-3 bg-[#F7F2ED] rounded-lg text-center font-semibold hover:bg-[#DDBEA9] hover:text-white transition-colors">Cortisol</button>
-                               <button data-hormone="serotonina" class="hormone-btn p-3 bg-[#F7F2ED] rounded-lg text-center font-semibold hover:bg-[#DDBEA9] hover:text-white transition-colors">Serotonina</button>
-                               <button data-hormone="dopamina" class="hormone-btn p-3 bg-[#F7F2ED] rounded-lg text-center font-semibold hover:bg-[#DDBEA9] hover:text-white transition-colors">Dopamina</button>
-                               <button data-hormone="grelina" class="hormone-btn p-3 bg-[#F7F2ED] rounded-lg text-center font-semibold hover:bg-[#DDBEA9] hover:text-white transition-colors">Grelina/Leptina</button>
-                            </div>
-                            <div id="hormone-info" class="p-4 bg-gray-50 rounded-md min-h-[100px] text-sm text-gray-700">
-                                <p>Selecciona una hormona para ver su descripción.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-12 card bg-white p-6 rounded-lg shadow-sm">
-                    <h3 class="text-2xl font-bold mb-4 text-center">El Ciclo Vicioso: Ansiedad, Antojo, Culpa</h3>
-                    <p class="mb-6 text-center text-gray-600 max-w-2xl mx-auto">La ansiedad no solo provoca el antojo, sino que la culpa posterior alimenta más ansiedad, creando un bucle del que es difícil salir. Visualizarlo es el primer paso para romperlo.</p>
-                    <div class="chart-container">
-                        <canvas id="cycleChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="plan" class="py-16">
-            <div class="container mx-auto px-6">
-                <div class="text-center mb-12">
-                    <h2 class="text-3xl md:text-4xl font-bold">Tu Plan de Acción: 4 Pilares para el Cambio</h2>
-                    <p class="mt-4 max-w-3xl mx-auto text-gray-600">Recuperar el control es posible. Estas estrategias fundamentales, basadas en la ciencia, te ayudarán a restablecer el equilibrio de tu cuerpo y mente. Céntrate en un pilar a la vez para construir hábitos sólidos.</p>
-                </div>
-                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-                    <div class="card bg-white p-6 rounded-lg shadow-sm text-center">
-                        <div class="text-5xl mb-4">🍎</div>
-                        <h3 class="text-xl font-bold mb-2">Nutrición Estable</h3>
-                        <p class="text-gray-600 text-sm">Aprende a construir platos que te mantengan saciado y con energía estable, previniendo la montaña rusa del azúcar.</p>
-                    </div>
-                     <div class="card bg-white p-6 rounded-lg shadow-sm text-center">
-                        <div class="text-5xl mb-4">🏃‍♀️</div>
-                        <h3 class="text-xl font-bold mb-2">Movimiento Inteligente</h3>
-                        <p class="text-gray-600 text-sm">Usa el ejercicio como una herramienta poderosa para generar endorfinas y reducir el estrés, no como un castigo.</p>
-                    </div>
-                     <div class="card bg-white p-6 rounded-lg shadow-sm text-center">
-                        <div class="text-5xl mb-4">😴</div>
-                        <h3 class="text-xl font-bold mb-2">Descanso Reparador</h3>
-                        <p class="text-gray-600 text-sm">Prioriza el sueño para regular las hormonas del apetito (grelina y leptina) y mejorar tu estado de ánimo.</p>
-                    </div>
-                     <div class="card bg-white p-6 rounded-lg shadow-sm text-center">
-                        <div class="text-5xl mb-4">🧠</div>
-                        <h3 class="text-xl font-bold mb-2">Fortaleza Mental</h3>
-                        <p class="text-gray-600 text-sm">Practica la alimentación consciente e identifica tus detonantes emocionales para romper patrones automáticos.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section id="herramientas" class="py-16 bg-[#F7F2ED]">
-            <div class="container mx-auto px-6">
-                <div class="text-center mb-12">
-                    <h2 class="text-3xl md:text-4xl font-bold">Caja de Herramientas Prácticas</h2>
-                    <p class="mt-4 max-w-3xl mx-auto text-gray-600">Tener a mano las opciones correctas en el momento justo es clave. Explora esta sección para encontrar alimentos que te ayudan y alternativas saludables para cuando lleguen los antojos.</p>
-                </div>
+                <section id="nutricion" class="content-section">
+                   <div class="text-center mb-10"><h2 class="text-3xl font-bold tracking-tight sm:text-4xl">Arquitectura Nutricional</h2><p class="mt-4 text-lg text-gray-400">Usa la matriz para personalizar tus comidas.</p></div>
+                   <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                       <div class="card"><h3 class="text-xl font-bold mb-4">Plan de Alimentación</h3><ul class="space-y-3 text-gray-300"><li><strong style="color: var(--main-red);">Comida 1:</strong> 5 claras + 1 huevo, 1/2 aguacate.</li><li><strong style="color: var(--main-red);">Comida 2:</strong> 200g yogur griego, frutos rojos.</li><li><strong style="color: var(--main-red);">Comida 3 (Pre):</strong> 200g pollo, 200g arroz, brócoli.</li><li><strong style="color: var(--main-red);">Comida 4 (Post):</strong> 40g whey. Luego: 180g lomo, 250g papa.</li><li><strong style="color: var(--main-red);">Comida 5:</strong> 200g cottage o 180g salmón, almendras.</li></ul></div>
+                       <div class="card"><h3 class="text-xl font-bold mb-4">Estrategia y Flexibilidad</h3><div class="space-y-4 text-gray-300"><p><strong style="color: var(--main-red);">Frecuencia:</strong> 4-6 comidas para optimizar MPS.</p><p><strong style="color: var(--main-red);">Timing de Carbs:</strong> Concentra carbs pre/post entreno.</p><p><strong style="color: var(--main-red);">Consistencia:</strong> Es la clave, mantén calorías y proteína estables.</p><p><strong style="color: var(--main-red);">Hidratación:</strong> Mínimo 3-4 litros de agua/día.</p></div></div>
+                   </div>
+                   <div class="card"><h3 class="text-xl font-bold mb-4 text-center">Matriz de Selección de Alimentos</h3><div class="overflow-x-auto"><table class="w-full text-sm text-left text-gray-400"><thead class="text-xs text-gray-300 uppercase bg-black/30"><tr><th class="px-6 py-3">Proteína</th><th class="px-6 py-3">Carbs</th><th class="px-6 py-3">Grasas</th><th class="px-6 py-3">Verduras/Frutas</th></tr></thead><tbody class="divide-y divide-gray-800"><tr><td class="px-6 py-4">Pechuga de pollo/pavo</td><td class="px-6 py-4">Avena, arroz</td><td class="px-6 py-4">Aguacate</td><td class="px-6 py-4">Brócoli, espinaca</td></tr><tr><td class="px-6 py-4">Lomo de res/cerdo</td><td class="px-6 py-4">Papa, batata, yuca</td><td class="px-6 py-4">Aceite de oliva</td><td class="px-6 py-4">Coliflor, pimentón</td></tr><tr><td class="px-6 py-4">Pescado blanco</td><td class="px-6 py-4">Plátano, pasta</td><td class="px-6 py-4">Nueces, almendras</td><td class="px-6 py-4">Cebolla, tomate</td></tr></tbody></table></div></div>
+                </section>
                 
-                <div>
-                    <div class="flex justify-center border-b border-gray-300 mb-8">
-                        <button data-tab="aliados" class="tab-btn active py-2 px-6 font-semibold border-b-2 border-[#A88B79] text-[#A88B79]">Alimentos Aliados</button>
-                        <button data-tab="alternativas" class="tab-btn py-2 px-6 font-semibold text-gray-500 border-b-2 border-transparent">Alternativas Saludables</button>
-                        <button data-tab="suplementos" class="tab-btn py-2 px-6 font-semibold text-gray-500 border-b-2 border-transparent">Suplementos</button>
+                <section id="entrenamiento" class="content-section">
+                    <div class="text-center mb-10"><h2 class="text-3xl font-bold tracking-tight sm:text-4xl">Protocolo de Entrenamiento</h2><p class="mt-4 text-lg text-gray-400">Enfoque en técnica, RIR y sobrecarga progresiva.</p></div>
+                    <div class="flex justify-center flex-wrap gap-2 mb-8" id="workout-nav"><button data-day="1" class="workout-day-btn active px-4 py-2 text-sm font-bold rounded-md">Día 1</button><button data-day="2" class="workout-day-btn px-4 py-2 text-sm font-bold rounded-md">Día 2</button><button data-day="3" class="workout-day-btn px-4 py-2 text-sm font-bold rounded-md">Día 3</button><button data-day="4" class="workout-day-btn px-4 py-2 text-sm font-bold rounded-md">Día 4</button><button data-day="5" class="workout-day-btn px-4 py-2 text-sm font-bold rounded-md">Día 5</button></div>
+                    <div id="workout-content" class="card"></div>
+                </section>
+                
+                <section id="progreso" class="content-section">
+                     <div class="text-center mb-10"><h2 class="text-3xl font-bold tracking-tight sm:text-4xl">Tu Centro de Progreso</h2><p class="mt-4 text-lg text-gray-400">Registra tus métricas, notas y levantamientos. La data es poder.</p></div>
+                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                         <div class="card space-y-4"><h3 class="text-xl font-bold text-center text-red-500">Registro de Medidas</h3>
+                             <form id="measurement-form" class="grid grid-cols-2 gap-4"><input type="date" id="measure-date" class="form-input col-span-2"><input type="number" step="0.1" id="measure-weight" placeholder="Peso (kg)" class="form-input"><input type="number" step="0.1" id="measure-waist" placeholder="Cintura (cm)" class="form-input"><input type="number" step="0.1" id="measure-chest" placeholder="Pecho (cm)" class="form-input"><input type="number" step="0.1" id="measure-arm" placeholder="Brazo (cm)" class="form-input"><button type="submit" class="btn-primary col-span-2">Guardar Medidas</button></form>
+                             <div class="overflow-auto max-h-60"><table class="w-full text-sm text-left"><thead class="text-xs text-red-400 uppercase bg-black/30"><tr><th class="p-2">Fecha</th><th class="p-2">Peso</th><th class="p-2">Cintura</th><th class="p-2"></th></tr></thead><tbody id="measurements-history" class="divide-y divide-gray-800"></tbody></table></div>
+                         </div>
+                         <div class="card space-y-4"><h3 class="text-xl font-bold text-center text-red-500">Bitácora de Notas</h3>
+                             <form id="notes-form" class="space-y-4"><textarea id="note-text" rows="4" class="form-input w-full" placeholder="Anota tus victorias, sensaciones, ajustes..."></textarea><button type="submit" class="btn-primary w-full">Guardar Nota</button></form>
+                             <div id="notes-history" class="space-y-3 overflow-auto max-h-60 pr-2"></div>
+                         </div>
+                         <div class="card lg:col-span-2 space-y-4"><h3 class="text-xl font-bold text-center text-red-500">Registro de Levantamientos</h3>
+                             <form id="lift-form" class="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
+                                 <div class="sm:col-span-2"><label for="lift-exercise" class="text-xs text-gray-400">Ejercicio</label><select id="lift-exercise" class="form-input w-full"></select></div>
+                                 <div><label for="lift-weight" class="text-xs text-gray-400">Peso (kg)</label><input type="number" step="0.5" id="lift-weight" placeholder="kg" class="form-input w-full"></div>
+                                 <div><label for="lift-reps" class="text-xs text-gray-400">Reps</label><input type="number" id="lift-reps" placeholder="Reps" class="form-input w-full"></div>
+                                 <button type="submit" class="btn-primary sm:col-span-4 w-full">Guardar Levantamiento</button>
+                             </form>
+                             <div class="flex justify-between items-center"><h4 class="text-lg font-semibold">Historial</h4><select id="lift-filter" class="form-input w-1/2 sm:w-1/3"></select></div>
+                             <div class="overflow-auto max-h-72"><table class="w-full text-sm text-left"><thead class="text-xs text-red-400 uppercase bg-black/30"><tr><th class="p-2">Fecha</th><th class="p-2">Ejercicio</th><th class="p-2">Peso</th><th class="p-2">Reps</th><th class="p-2"></th></tr></thead><tbody id="lifts-history" class="divide-y divide-gray-800"></tbody></table></div>
+                         </div>
+                     </div>
+                </section>
+                
+                <section id="recursos" class="content-section">
+                    <div class="text-center mb-10"><h2 class="text-3xl font-bold tracking-tight sm:text-4xl">Caja de Herramientas</h2><p class="mt-4 text-lg text-gray-400">Conocimiento clave para potenciar tus resultados.</p></div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div class="card lg:col-span-3"><h3 class="text-2xl font-bold mb-4">Calculadoras de Entrenamiento</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div><h4 class="font-bold text-lg text-red-500 mb-2">Calculadora de 1RM Estimado</h4><form id="1rm-form" class="space-y-3"><input type="number" id="1rm-weight" placeholder="Peso levantado (kg)" class="form-input w-full"><input type="number" id="1rm-reps" placeholder="Repeticiones completadas" class="form-input w-full"><button type="submit" class="btn-primary w-full">Calcular 1RM</button></form><p id="1rm-result" class="mt-3 font-bold text-center text-xl"></p></div>
+                            <div><h4 class="font-bold text-lg text-red-500 mb-2">Calculadora de Peso por RIR</h4><form id="rir-form" class="space-y-3"><input type="number" id="rir-1rm" placeholder="Tu 1RM estimado (kg)" class="form-input w-full"><input type="number" id="rir-reps" placeholder="Repeticiones objetivo" class="form-input w-full"><input type="number" id="rir-rir" placeholder="RIR deseado (0-3)" class="form-input w-full"><button type="submit" class="btn-primary w-full">Calcular Peso</button></form><p id="rir-result" class="mt-3 font-bold text-center text-xl"></p></div>
+                        </div></div>
+                        <div class="card"><h3 class="text-2xl font-bold mb-4">Fundamentales</h3><ul class="text-sm list-disc list-inside text-gray-300 space-y-2"><li><strong>Abdomen:</strong> Sobrecarga progresiva con Crunch en Polea y Elev. de Piernas Colgado.</li><li><strong>Antebrazo:</strong> Atacar con flexión/extensión de muñeca y trabajo de agarre.</li></ul></div>
+                        <div class="card"><h3 class="text-2xl font-bold mb-4">Ciencia</h3><ul class="text-sm list-disc list-inside text-gray-300 space-y-2"><li><strong>Déficit Calórico:</strong> Esencial para la oxidación de grasa.</li><li><strong>Proteína Elevada:</strong> Clave para la retención muscular.</li><li><strong>Sobrecarga Progresiva:</strong> El pilar del progreso.</li></ul></div>
+                        <div class="card"><h3 class="text-2xl font-bold mb-4">Mindset</h3><ul class="text-sm list-disc list-inside text-gray-300 space-y-2"><li><strong>Consistencia > Perfección.</strong></li><li><strong>Paciencia y objetividad.</strong></li><li><strong>Conexión Mente-Músculo.</strong></li></ul></div>
                     </div>
-
-                    <div id="tab-content">
-                        <div id="aliados" class="tab-pane">
-                            <h3 class="text-2xl font-bold text-center mb-6">Estrellas de la Estabilización</h3>
-                            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 text-center">
-                                <div class="p-4 bg-white rounded-lg shadow-sm">Bayas</div>
-                                <div class="p-4 bg-white rounded-lg shadow-sm">Frutos Secos</div>
-                                <div class="p-4 bg-white rounded-lg shadow-sm">Yogur Griego</div>
-                                <div class="p-4 bg-white rounded-lg shadow-sm">Aguacate</div>
-                                <div class="p-4 bg-white rounded-lg shadow-sm">Chocolate Negro (+85%)</div>
-                                <div class="p-4 bg-white rounded-lg shadow-sm">Canela</div>
-                                <div class="p-4 bg-white rounded-lg shadow-sm">Semillas de Chía</div>
-                                <div class="p-4 bg-white rounded-lg shadow-sm">Legumbres</div>
-                                <div class="p-4 bg-white rounded-lg shadow-sm">Verduras de Hoja Verde</div>
-                                <div class="p-4 bg-white rounded-lg shadow-sm">Huevos</div>
-                                <div class="p-4 bg-white rounded-lg shadow-sm">Pescado Graso</div>
-                                <div class="p-4 bg-white rounded-lg shadow-sm">Brócoli</div>
-                            </div>
-                        </div>
-
-                        <div id="alternativas" class="tab-pane hidden">
-                             <h3 class="text-2xl font-bold text-center mb-6">Sustitutos Inteligentes para Antojos</h3>
-                             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <div class="bg-white p-6 rounded-lg shadow-sm">
-                                    <h4 class="font-bold mb-2">Antojo de GOLOSINAS</h4>
-                                    <p class="text-gray-600">→ Una pieza de fruta, un par de dátiles, un trozo de chocolate negro, o fruta a la parrilla.</p>
-                                </div>
-                                <div class="bg-white p-6 rounded-lg shadow-sm">
-                                    <h4 class="font-bold mb-2">Antojo de HELADO</h4>
-                                    <p class="text-gray-600">→ Yogur griego con bayas, "helado" de plátano congelado y aguacate, o pudin de chía.</p>
-                                </div>
-                                <div class="bg-white p-6 rounded-lg shadow-sm">
-                                    <h4 class="font-bold mb-2">Antojo de BOLLERÍA</h4>
-                                    <p class="text-gray-600">→ Magdalenas caseras con harina de almendras, "bolitas energéticas" de avena y dátiles.</p>
-                                </div>
-                                <div class="bg-white p-6 rounded-lg shadow-sm">
-                                    <h4 class="font-bold mb-2">Antojo de BEBIDAS AZUCARADAS</h4>
-                                    <p class="text-gray-600">→ Agua con gas y limón, infusiones frías sin azúcar, o kombucha.</p>
-                                </div>
-                                <div class="bg-white p-6 rounded-lg shadow-sm">
-                                    <h4 class="font-bold mb-2">Antojo de ALGO CRUJIENTE</h4>
-                                    <p class="text-gray-600">→ Un puñado de frutos secos, chips de kale al horno, o palitos de zanahoria con hummus.</p>
-                                </div>
-                             </div>
-                        </div>
-
-                        <div id="suplementos" class="tab-pane hidden">
-                            <h3 class="text-2xl font-bold text-center mb-6">Apoyo Complementario</h3>
-                            <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md mb-6 max-w-3xl mx-auto">
-                                <p><strong class="font-bold">Advertencia:</strong> Consulta siempre a un profesional de la salud antes de tomar cualquier suplemento. No son soluciones mágicas y pueden tener interacciones.</p>
-                            </div>
-                             <div class="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-                                <div class="bg-white p-6 rounded-lg shadow-sm">
-                                    <h4 class="font-bold mb-2">Para el Ánimo y la Ansiedad</h4>
-                                    <ul class="list-disc list-inside text-gray-600 space-y-1">
-                                        <li><strong>Magnesio:</strong> Vital para el sistema nervioso.</li>
-                                        <li><strong>Ashwagandha:</strong> Ayuda al cuerpo a gestionar el estrés.</li>
-                                        <li><strong>L-Teanina:</strong> Promueve la relajación sin somnolencia.</li>
-                                    </ul>
-                                </div>
-                                <div class="bg-white p-6 rounded-lg shadow-sm">
-                                    <h4 class="font-bold mb-2">Para el Apetito y Azúcar</h4>
-                                    <ul class="list-disc list-inside text-gray-600 space-y-1">
-                                        <li><strong>5-HTP:</strong> Precursor de la serotonina, aumenta la saciedad.</li>
-                                        <li><strong>Picolinato de Cromo:</strong> Ayuda a estabilizar el azúcar en sangre.</li>
-                                        <li><strong>Fibra (Glucomanano):</strong> Aumenta la sensación de plenitud.</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                </section>
             </div>
-        </section>
+        </main>
 
-        <section id="tu-camino" class="py-16">
-            <div class="container mx-auto px-6">
-                <div class="text-center mb-12">
-                    <h2 class="text-3xl md:text-4xl font-bold">Construye Tu Camino Hacia el Bienestar</h2>
-                    <p class="mt-4 max-w-3xl mx-auto text-gray-600">El éxito a largo plazo no se trata de perfección, sino de progreso y resiliencia. Usa este plan para integrar los cambios de forma sostenible y aprende a reconocer cuándo es momento de buscar apoyo profesional.</p>
-                </div>
-
-                <div class="max-w-3xl mx-auto">
-                    <div id="plan-acordeon">
-                        <div class="border border-gray-200 rounded-lg mb-2">
-                            <button class="acordeon-btn w-full flex justify-between items-center p-4 font-semibold bg-gray-50 hover:bg-gray-100">
-                                <span>Nivel 1: Los Fundamentos (Empezar Aquí)</span>
-                                <span class="transform transition-transform duration-300">▼</span>
-                            </button>
-                            <div class="acordeon-content hidden p-4 text-gray-600 bg-white">
-                                <p>No intentes cambiarlo todo a la vez. Empieza aquí:</p>
-                                <ul class="list-disc list-inside mt-2 space-y-1">
-                                    <li><strong>Desayuno con Proteínas:</strong> Asegura un desayuno rico en proteínas cada día.</li>
-                                    <li><strong>Movimiento Diario:</strong> Incorpora una caminata de 15-30 minutos.</li>
-                                    <li><strong>Higiene del Sueño:</strong> Acuéstate y levántate a la misma hora y evita pantallas antes de dormir.</li>
-                                </ul>
-                            </div>
-                        </div>
-                         <div class="border border-gray-200 rounded-lg mb-2">
-                            <button class="acordeon-btn w-full flex justify-between items-center p-4 font-semibold bg-gray-50 hover:bg-gray-100">
-                                <span>Nivel 2: Habilidades Conductuales</span>
-                                <span class="transform transition-transform duration-300">▼</span>
-                            </button>
-                            <div class="acordeon-content hidden p-4 text-gray-600 bg-white">
-                                <p>Una vez dominados los fundamentos, añade estas habilidades:</p>
-                                <ul class="list-disc list-inside mt-2 space-y-1">
-                                    <li><strong>Diario de Emociones y Comida:</strong> Identifica qué situaciones o emociones disparan tus antojos.</li>
-                                    <li><strong>Alimentación Consciente:</strong> Practica comer una de tus comidas diarias sin distracciones, saboreando cada bocado.</li>
-                                    <li><strong>Planifica una Respuesta:</strong> Cuando identifiques un detonante, ten lista una actividad alternativa (llamar a un amigo, escuchar música, etc.).</li>
-                                </ul>
-                            </div>
-                        </div>
-                         <div class="border border-gray-200 rounded-lg">
-                            <button class="acordeon-btn w-full flex justify-between items-center p-4 font-semibold bg-gray-50 hover:bg-gray-100">
-                                <span>Nivel 3: Ajustes y Apoyo Profesional</span>
-                                <span class="transform transition-transform duration-300">▼</span>
-                            </button>
-                            <div class="acordeon-content hidden p-4 text-gray-600 bg-white">
-                                <p>Recuerda que no estás solo. Es hora de buscar ayuda si:</p>
-                                <ul class="list-disc list-inside mt-2 space-y-1">
-                                    <li>Sientes que el comportamiento está fuera de control.</li>
-                                    <li>La ansiedad es severa e interfiere con tu vida diaria.</li>
-                                    <li>Sospechas que puedes tener un trastorno de la conducta alimentaria.</li>
-                                </ul>
-                                <p class="mt-4">Un <strong>psicólogo</strong> puede ayudarte con la parte emocional y un <strong>dietista-nutricionista</strong> con un plan de alimentación personalizado.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <footer class="bg-[#3D405B] text-white py-8">
-        <div class="container mx-auto px-6 text-center">
-            <p>Esta es una guía informativa y no reemplaza el consejo médico profesional.</p>
-            <p class="text-sm mt-2 text-gray-400">&copy; 2025 Guía Bienestar. Todos los derechos reservados.</p>
+        <div class="fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-md shadow-[0_-2px_10px_rgba(0,0,0,0.5)] md:hidden h-16">
+            <nav class="flex justify-around items-center h-full" id="mobile-nav">
+                <a href="#" data-tab="resumen" class="nav-link-mobile active flex flex-col items-center text-xs p-1 text-gray-400">📊<span class="mt-1">Resumen</span></a>
+                <a href="#" data-tab="fit-ai" class="nav-link-mobile flex flex-col items-center text-xs p-1 text-gray-400">🤖<span class="mt-1">Fit-AI</span></a>
+                <a href="#" data-tab="nutricion" class="nav-link-mobile flex flex-col items-center text-xs p-1 text-gray-400">🍎<span class="mt-1">Nutrición</span></a>
+                <a href="#" data-tab="entrenamiento" class="nav-link-mobile flex flex-col items-center text-xs p-1 text-gray-400">🏋️<span class="mt-1">Entreno</span></a>
+                <a href="#" data-tab="progreso" class="nav-link-mobile flex flex-col items-center text-xs p-1 text-gray-400">📈<span class="mt-1">Progreso</span></a>
+                <a href="#" data-tab="recursos" class="nav-link-mobile flex flex-col items-center text-xs p-1 text-gray-400">🧠<span class="mt-1">Recursos</span></a>
+            </nav>
         </div>
-    </footer>
+    </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            
-            const mobileMenuButton = document.getElementById('mobile-menu-button');
-            const mobileMenu = document.getElementById('mobile-menu');
-            mobileMenuButton.addEventListener('click', () => {
-                mobileMenu.classList.toggle('hidden');
-            });
-            
-            const mobileLinks = mobileMenu.querySelectorAll('a');
-            mobileLinks.forEach(link => {
-                link.addEventListener('click', () => {
-                    mobileMenu.classList.add('hidden');
-                });
-            });
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // --- DATOS Y CONFIGURACIÓN INICIAL ---
+    const macroData = { calorias: 2270, proteina: 225, carbs: 200, grasas: 63 };
+    const workoutData = {
+        '1':{ title:'Día 1: Empuje (Pecho, Hombro, Tríceps)', description:'Énfasis en fuerza e hipertrofia.', main_work: [ {name:'Press de Banca con Barra',sets:4,reps:'6-10',rest:'180s',rir:'2'}, {name:'Press Inclinado con Mancuernas',sets:3,reps:'8-12',rest:'120s',rir:'1-2'}, {name:'Press Militar con Barra',sets:4,reps:'6-10',rest:'150s',rir:'2'}, {name:'Elevaciones Laterales',sets:4,reps:'12-15',rest:'75s',rir:'1'}, {name:'Fondos en Paralelas (o Máquina)',sets:3,reps:'Al fallo',rest:'90s',rir:'0'}, {name:'Extensiones de Tríceps en Polea',sets:3,reps:'12-15',rest:'75s',rir:'Drop set'} ], specific_work: [ {name:'Crunch en Polea Alta',sets:3,reps:'15-20',rest:'60s',rir:'1'}, {name:'Elevaciones de Piernas Colgado',sets:3,reps:'15-20',rest:'60s',rir:'1'} ], cardio: { name: 'CARDIO LISS', details: '30-45 minutos a ritmo constante (65-75% FC Máx).' } },
+        '2':{ title:'Día 2: Tirón (Espalda, Bíceps)', description:'Construcción de densidad y fuerza.', main_work: [ {name:'Peso Muerto Rumano (RDL)',sets:4,reps:'6-10',rest:'180s',rir:'2'}, {name:'Remo con Barra',sets:4,reps:'6-10',rest:'150s',rir:'2'}, {name:'Remo con Mancuerna',sets:3,reps:'8-12 c/b',rest:'90s',rir:'1-2'}, {name:'Face Pulls',sets:4,reps:'15-20',rest:'75s',rir:'1'}, {name:'Curl con Barra Z',sets:3,reps:'8-12',rest:'90s',rir:'1-2'} ], specific_work: [ {name:'Curl Martillo',sets:3,reps:'10-15',rest:'75s',rir:'1'}, {name:'Curl de Muñeca (Flex/Ext)',sets:'3 c/u',reps:'15-20',rest:'60s',rir:'1'} ] },
+        '3':{ title:'Día 3: Piernas y Core', description:'Enfoque en hipertrofia y estabilidad.', main_work: [ {name:'Prensa de Piernas',sets:4,reps:'10-15',rest:'120s',rir:'1-2'}, {name:'Hip Thrust',sets:3,reps:'8-12',rest:'120s',rir:'1'}, {name:'Curl Femoral',sets:3,reps:'12-15',rest:'90s',rir:'1'}, {name:'Extensiones de Cuádriceps',sets:3,reps:'12-18',rest:'75s',rir:'1'}, {name:'Abducción de Cadera',sets:3,reps:'15-20',rest:'60s',rir:'1'}, {name:'Elevación de Gemelos',sets:4,reps:'15-20',rest:'60s',rir:'1'} ], specific_work: [ {name:'Plancha con Peso',sets:3,reps:'45-60s',rest:'60s',rir:'N/A'}, {name:'Plancha Lateral',sets:3,reps:'30-45s c/l',rest:'45s',rir:'N/A'} ], cardio: { name: 'CARDIO LISS', details: '30-45 minutos a ritmo constante (65-75% FC Máx).' } },
+        '4':{ title:'Día 4: Espalda y Antebrazo', description:'Alto volumen para amplitud y agarre.', main_work: [ {name:'Jalón al Pecho',sets:4,reps:'8-12',rest:'120s',rir:'1-2'}, {name:'Remo en Polea Baja',sets:4,reps:'8-12',rest:'90s',rir:'1-2'}, {name:'Pullover con Cable',sets:3,reps:'12-15',rest:'75s',rir:'1'}, {name:'Pájaros (Hombro Posterior)',sets:3,reps:'15-20',rest:'75s',rir:'1'}, {name:'Curl Predicador',sets:3,reps:'8-12',rest:'90s',rir:'1'} ], specific_work: [ {name:'Paseo del Granjero',sets:3,reps:'30-40m',rest:'90s',rir:'N/A'}, {name:'Curl de Concentración',sets:3,reps:'10-15 c/b',rest:'60s',rir:'0-1'} ] },
+        '5':{ title:'Día 5: Empuje (Hipertrofia)', description:'Énfasis en estrés metabólico y core avanzado.', main_work: [ {name:'Press Inclinado con Barra',sets:4,reps:'8-12',rest:'120s',rir:'1-2'}, {name:'Press Hombros Mancuernas',sets:4,reps:'8-12',rest:'120s',rir:'1-2'}, {name:'Cruces en Polea',sets:3,reps:'12-15',rest:'75s',rir:'Drop set'}, {name:'Elev. Laterales Sentado',sets:4,reps:'15-20',rest:'75s',rir:'1'}, {name:'Ext. Tríceps sobre Cabeza',sets:3,reps:'10-15',rest:'75s',rir:'1'}, {name:'Press Francés',sets:3,reps:'10-12',rest:'90s',rir:'1'} ], specific_work: [ {name:'Rueda Abdominal',sets:3,reps:'Al fallo',rest:'75s',rir:'0'}, {name:'Rotaciones Rusas (Leñador)',sets:3,reps:'10-15 c/l',rest:'60s',rir:'1'} ], cardio: { name: 'CARDIO HIIT', details: '15-20 min. Ejemplo: 1 min sprint, 2 min recuperación. Repetir.' } }
+    };
+    
+    new Chart(document.getElementById('macroChart').getContext('2d'), { type: 'doughnut', data: { labels: ['Proteína', 'Carbs', 'Grasas'], datasets: [{ data: [macroData.proteina * 4, macroData.carbs * 4, macroData.grasas * 9], backgroundColor: ['#dc2626', '#f5f5f5', '#525252'], borderColor: 'rgba(24, 24, 24, 0.85)', borderWidth: 4, hoverOffset: 8 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { color: '#e5e5e5' }}, tooltip: { callbacks: { label: c => `${c.label}: ${c.raw.toFixed(0)} kcal (${((c.raw/c.chart.getDatasetMeta(0).total)*100).toFixed(1)}%)` }}}} });
 
-            const hormoneData = {
-                cortisol: {
-                    title: 'Cortisol (La Hormona del Estrés)',
-                    text: 'En estrés crónico, el cortisol se mantiene alto, pidiendo energía rápida en forma de azúcar y grasa. Aumenta el apetito por alimentos calóricos y sabrosos.'
-                },
-                serotonina: {
-                    title: 'Serotonina (El Estabilizador del Ánimo)',
-                    text: 'Niveles bajos de serotonina provocan antojos de carbohidratos, ya que el cuerpo intenta "automedicarse" para facilitar la producción de este neurotransmisor del bienestar.'
-                },
-                dopamina: {
-                    title: 'Dopamina (La Recompensa)',
-                    text: 'El azúcar provoca una gran liberación de dopamina, generando placer. El cerebro aprende a buscar esa "recompensa" rápida cuando te sientes mal, creando un hábito.'
-                },
-                grelina: {
-                    title: 'Grelina/Leptina (Reguladores del Apetito)',
-                    text: 'La falta de sueño (común en la ansiedad) aumenta la grelina (hambre) y disminuye la leptina (saciedad). El resultado: más hambre y dificultad para sentirse lleno.'
-                }
-            };
-            
-            const hormoneBtns = document.querySelectorAll('.hormone-btn');
-            const hormoneInfo = document.getElementById('hormone-info');
-            
-            hormoneBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const hormoneKey = btn.dataset.hormone;
-                    const data = hormoneData[hormoneKey];
-                    hormoneInfo.innerHTML = `<h5 class="font-bold mb-1">${data.title}</h5><p>${data.text}</p>`;
-                    
-                    hormoneBtns.forEach(b => b.classList.remove('bg-[#A88B79]', 'text-white'));
-                    btn.classList.add('bg-[#A88B79]', 'text-white');
-                });
-            });
+    const navLinks = document.querySelectorAll('#main-nav a, #mobile-nav a');
+    const contentSections = document.querySelectorAll('.content-section');
+    navLinks.forEach(link => { link.addEventListener('click', e => { e.preventDefault(); const tabId = e.currentTarget.dataset.tab; contentSections.forEach(s => s.classList.remove('active')); document.getElementById(tabId).classList.add('active'); navLinks.forEach(l => {l.classList.remove('active');}); document.querySelector(`#main-nav a[data-tab="${tabId}"]`).classList.add('active'); document.querySelector(`#mobile-nav a[data-tab="${tabId}"]`).classList.add('active'); window.scrollTo({ top: 0, behavior: 'smooth' }); }); });
+    
+    const workoutNav = document.getElementById('workout-nav');
+    const workoutContent = document.getElementById('workout-content');
+    function createTableHTML(exercises) { return `<div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="text-left text-red-500 border-b border-gray-700"><th class="p-2">Ejercicio</th><th class="p-2 text-center">Series</th><th class="p-2 text-center">Reps</th><th class="p-2 text-center">Descanso</th><th class="p-2 text-center">RIR</th></tr></thead><tbody class="divide-y divide-gray-800">${exercises.map(ex => `<tr class="text-gray-300"><td class="p-2 font-semibold">${ex.name}</td><td class="p-2 text-center">${ex.sets}</td><td class="p-2 text-center">${ex.reps}</td><td class="p-2 text-center">${ex.rest}</td><td class="p-2 text-center font-bold text-red-500">${ex.rir}</td></tr>`).join('')}</tbody></table></div>`; }
+    function renderWorkout(day) { const data = workoutData[day]; let html = `<h3 class="text-xl font-bold mb-2 text-white">${data.title}</h3><p class="text-gray-400 mb-4">${data.description}</p>`; html += createTableHTML(data.main_work); if (data.specific_work && data.specific_work.length > 0) { html += `<h4 class="text-lg font-semibold mt-6 mb-2 text-red-400">Trabajo Específico (Abdomen/Antebrazo)</h4>`; html += createTableHTML(data.specific_work); } if (data.cardio) { html += `<h4 class="text-lg font-semibold mt-6 mb-2 text-cyan-400">Cardio Finalizador</h4>`; html += `<div class="bg-black/20 p-4 rounded-lg border border-gray-700"><p class="text-xl font-bold text-center text-white">${data.cardio.name}</p><p class="text-md text-gray-400 text-center mt-1">${data.cardio.details}</p></div>`; } workoutContent.innerHTML = html; }
+    workoutNav.addEventListener('click', e => { if (e.target.tagName === 'BUTTON') { const day = e.target.dataset.day; workoutNav.querySelectorAll('button').forEach(btn => btn.classList.remove('active')); e.target.classList.add('active'); renderWorkout(day); } });
+    renderWorkout('1');
 
-            const cycleCtx = document.getElementById('cycleChart').getContext('2d');
-            const cycleChart = new Chart(cycleCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['1. Ansiedad / Estrés', '2. Antojo de Azúcar', '3. Ingesta Compulsiva', '4. Culpa y Arrepentimiento'],
-                    datasets: [{
-                        label: 'El Ciclo Vicioso',
-                        data: [25, 25, 25, 25],
-                        backgroundColor: [
-                            '#DDBEA9', 
-                            '#A88B79', 
-                            '#70877F', 
-                            '#B7B7A4'  
-                        ],
-                        borderColor: '#F7F2ED',
-                        borderWidth: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '60%',
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                             labels: {
-                                font: {
-                                    size: 12
-                                }
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.label || '';
-                                    if (label) {
-                                        label += ': ';
-                                    }
-                                    const descriptions = [
-                                        "Una emoción negativa (estrés, tristeza, aburrimiento) actúa como detonante.",
-                                        "El cerebro busca una solución rápida y placentera para aliviar el malestar.",
-                                        "Se come el alimento deseado, a menudo de forma rápida y sin control.",
-                                        "Tras la ingesta, aparecen sentimientos negativos que aumentan el estrés y reinician el ciclo."
-                                    ];
-                                    return descriptions[context.dataIndex];
-                                }
-                            }
-                        }
-                    }
-                }
-            });
+    let measurements = JSON.parse(localStorage.getItem('fitnessMeasurementsDR')) || [];
+    let notes = JSON.parse(localStorage.getItem('fitnessNotesDR')) || [];
+    let lifts = JSON.parse(localStorage.getItem('fitnessLiftsDR')) || [];
+    const measureForm = document.getElementById('measurement-form');
+    const measureHistoryEl = document.getElementById('measurements-history');
+    const notesForm = document.getElementById('notes-form');
+    const notesHistoryEl = document.getElementById('notes-history');
+    const liftForm = document.getElementById('lift-form');
+    const liftHistoryEl = document.getElementById('lifts-history');
+    const liftExerciseSelect = document.getElementById('lift-exercise');
+    const liftFilterSelect = document.getElementById('lift-filter');
+    const allExercises = [...new Set(Object.values(workoutData).flatMap(day => [...day.main_work, ...(day.specific_work || [])].map(ex => ex.name)))].sort();
+    function populateExerciseSelects() { liftFilterSelect.innerHTML = '<option value="all">Todos los Ejercicios</option>'; liftExerciseSelect.innerHTML = '<option value="">Selecciona Ejercicio</option>'; allExercises.forEach(ex => { liftExerciseSelect.innerHTML += `<option value="${ex}">${ex}</option>`; liftFilterSelect.innerHTML += `<option value="${ex}">${ex}</option>`; }); }
+    function renderMeasurements() { measurements.sort((a,b)=>new Date(b.date)-new Date(a.date)); measureHistoryEl.innerHTML = measurements.map(m=>`<tr><td class="p-2">${new Date(m.date).toLocaleDateString('es-CO',{timeZone:'UTC'})}</td><td class="p-2">${m.weight} kg</td><td class="p-2">${m.waist} cm</td><td class="p-2 text-right"><button class="btn-danger" data-id="${m.id}">X</button></td></tr>`).join(''); }
+    function renderNotes() { notes.sort((a,b)=>b.id-a.id); notesHistoryEl.innerHTML = notes.map(n=>`<div class="bg-black/20 p-3 rounded-lg"><p class="text-sm text-gray-300 whitespace-pre-wrap">${n.text}</p><div class="text-xs text-gray-500 mt-2 flex justify-between items-center">${n.date} <button class="btn-danger" data-id="${n.id}">X</button></div></div>`).join(''); }
+    function renderLifts() { lifts.sort((a, b) => new Date(b.date) - new Date(a.date)); const filter = liftFilterSelect.value; const filteredLifts = filter === 'all' ? lifts : lifts.filter(l => l.exercise === filter); liftHistoryEl.innerHTML = filteredLifts.map(l => `<tr><td class="p-2">${new Date(l.date).toLocaleDateString('es-CO', {timeZone:'UTC'})}</td><td class="p-2 font-semibold">${l.exercise}</td><td class="p-2">${l.weight} kg</td><td class="p-2">${l.reps}</td><td class="p-2 text-right"><button class="btn-danger" data-id="${l.id}">X</button></td></tr>`).join(''); }
+    measureForm.addEventListener('submit', e=>{ e.preventDefault(); if(!e.target.elements['measure-date'].value) { alert('Selecciona una fecha.'); return;} measurements.push({id:Date.now(),date:e.target.elements['measure-date'].value,weight:e.target.elements['measure-weight'].value||'N/A',waist:e.target.elements['measure-waist'].value||'N/A'}); localStorage.setItem('fitnessMeasurementsDR', JSON.stringify(measurements)); renderMeasurements(); e.target.reset(); e.target.elements['measure-date'].valueAsDate = new Date(); });
+    notesForm.addEventListener('submit', e=>{ e.preventDefault(); const text=e.target.elements['note-text'].value.trim(); if(!text) return; notes.push({id:Date.now(),date:new Date().toLocaleString('es-CO'),text}); localStorage.setItem('fitnessNotesDR',JSON.stringify(notes)); renderNotes(); e.target.reset(); });
+    liftForm.addEventListener('submit', e=>{ e.preventDefault(); const exercise = e.target.elements['lift-exercise'].value; const weight = e.target.elements['lift-weight'].value; const reps = e.target.elements['lift-reps'].value; if(!exercise || !weight || !reps) { alert('Completa todos los campos del levantamiento.'); return;} lifts.push({id:Date.now(),date:new Date().toISOString().split('T')[0],exercise,weight,reps}); localStorage.setItem('fitnessLiftsDR',JSON.stringify(lifts)); renderLifts(); e.target.reset(); });
+    measureHistoryEl.addEventListener('click', e => { if (e.target.classList.contains('btn-danger')) { measurements = measurements.filter(m => m.id !== Number(e.target.dataset.id)); localStorage.setItem('fitnessMeasurementsDR', JSON.stringify(measurements)); renderMeasurements(); } });
+    notesHistoryEl.addEventListener('click', e => { if (e.target.classList.contains('btn-danger')) { notes = notes.filter(n => n.id !== Number(e.target.dataset.id)); localStorage.setItem('fitnessNotesDR', JSON.stringify(notes)); renderNotes(); } });
+    liftHistoryEl.addEventListener('click', e => { if (e.target.classList.contains('btn-danger')) { lifts = lifts.filter(l => l.id !== Number(e.target.dataset.id)); localStorage.setItem('fitnessLiftsDR', JSON.stringify(lifts)); renderLifts(); } });
+    liftFilterSelect.addEventListener('change', renderLifts);
+    document.getElementById('1rm-form').addEventListener('submit', e => { e.preventDefault(); const w = parseFloat(e.target.elements['1rm-weight'].value); const r = parseInt(e.target.elements['1rm-reps'].value); if(w > 0 && r > 0){ const rm = w * (1 + (r/30)); document.getElementById('1rm-result').textContent = `1RM Estimado: ${rm.toFixed(1)} kg`; } else { document.getElementById('1rm-result').textContent = 'Datos inválidos'; } });
+    document.getElementById('rir-form').addEventListener('submit', e => { e.preventDefault(); const rm1 = parseFloat(e.target.elements['rir-1rm'].value); const reps = parseInt(e.target.elements['rir-reps'].value); const rir = parseInt(e.target.elements['rir-rir'].value); if(rm1 > 0 && reps > 0 && rir >= 0){ const totalReps = reps + rir; const intensity = 1 - (0.025 * totalReps); const weight = rm1 * intensity; document.getElementById('rir-result').textContent = `Peso Sugerido: ${weight.toFixed(1)} kg`; } else { document.getElementById('rir-result').textContent = 'Datos inválidos'; } });
+    document.getElementById('measure-date').valueAsDate = new Date();
+    populateExerciseSelects(); renderMeasurements(); renderNotes(); renderLifts();
 
-            const tabBtns = document.querySelectorAll('.tab-btn');
-            const tabPanes = document.querySelectorAll('.tab-pane');
+    // --- LÓGICA DE FIT-AI ---
+    // --- BASES DE DATOS INTERNAS ---
+    const recipeDatabase = [
+        { name: "Pollo con Arroz y Brócoli", calories: 550, protein: 50, carbs: 60, fat: 12, ingredients: ["200g Pechuga de Pollo", "150g Arroz Blanco", "100g Brócoli", "1 cda Aceite de Oliva"] },
+        { name: "Batido de Proteína y Avena", calories: 420, protein: 45, carbs: 50, fat: 8, ingredients: ["40g Proteína Whey", "50g Avena en Hojuelas", "150ml Leche", "1/2 Plátano"] },
+        { name: "Salmón a la Plancha con Papa", calories: 600, protein: 40, carbs: 55, fat: 25, ingredients: ["180g Salmón", "250g Papa", "Espárragos", "Limón"] },
+        { name: "Ensalada César con Pollo", calories: 480, protein: 45, carbs: 20, fat: 25, ingredients: ["150g Pollo a la parrilla", "Lechuga Romana", "Queso Parmesano", "Aderezo César Light"] },
+        { name: "Huevos Revueltos con Aguacate", calories: 350, protein: 25, carbs: 5, fat: 26, ingredients: ["3 Huevos", "1/2 Aguacate", "Espinaca", "Sal y Pimienta"] }
+    ];
 
-            tabBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    tabBtns.forEach(b => {
-                        b.classList.remove('active', 'border-[#A88B79]', 'text-[#A88B79]');
-                        b.classList.add('text-gray-500', 'border-transparent');
-                    });
-                    btn.classList.add('active', 'border-[#A88B79]', 'text-[#A88B79]');
-                    btn.classList.remove('text-gray-500', 'border-transparent');
-                    
-                    const tabId = btn.dataset.tab;
-                    tabPanes.forEach(pane => {
-                        if (pane.id === tabId) {
-                            pane.classList.remove('hidden');
-                        } else {
-                            pane.classList.add('hidden');
-                        }
-                    });
-                });
-            });
+    const productDatabase = {
+        // Ejemplo: Código de barras de una Coca-Cola (puede variar)
+        "7501055300077": { name: "Coca-Cola Original (355ml)", calories: 149, protein: 0, carbs: 39, fat: 0 },
+        // Ejemplo: Barrita de proteína Quest
+        "888849003611": { name: "Quest Bar - Chocolate Chip", calories: 190, protein: 21, carbs: 22, fat: 9 },
+        // Ejemplo: Lata de atún
+        "086600244108": { name: "Atún en Agua (lata 142g)", calories: 120, protein: 26, carbs: 0, fat: 1.5 }
+    };
+    
+    // --- REFERENCIAS A ELEMENTOS DEL DOM ---
+    const analyzeImageBtn = document.getElementById('analyze-image-btn');
+    const foodImageInput = document.getElementById('food-image-input');
+    const imagePreview = document.getElementById('image-preview');
+    const aiResultLoader = document.getElementById('ai-result-loader');
+    const aiResultContent = document.getElementById('ai-result-content');
+    const dailyLogHistory = document.getElementById('daily-log-history');
+    const dailyLogProgress = document.getElementById('daily-log-progress');
+    const clearLogBtn = document.getElementById('clear-log-btn');
+    const recipeSearchInput = document.getElementById('recipe-search-input');
+    const recipeSearchResults = document.getElementById('recipe-search-results');
+    const scanBarcodeBtn = document.getElementById('scan-barcode-btn');
+    const scannerModal = document.getElementById('barcode-scanner-modal');
+    const videoScanner = document.getElementById('video-scanner');
+    const closeScannerBtn = document.getElementById('close-scanner-btn');
 
-            const acordeonBtns = document.querySelectorAll('.acordeon-btn');
-            acordeonBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const content = btn.nextElementSibling;
-                    const icon = btn.querySelector('span:last-child');
-                    
-                    const isOpen = !content.classList.contains('hidden');
+    let dailyLog = JSON.parse(localStorage.getItem('fitAIDailyLogDR')) || { date: new Date().toISOString().split('T')[0], meals: [], totals: { calories: 0, protein: 0, carbs: 0, fat: 0 }};
+    let codeReader; // Variable para el lector de códigos de barras
 
-                    document.querySelectorAll('.acordeon-content').forEach(c => c.classList.add('hidden'));
-                    document.querySelectorAll('.acordeon-btn span:last-child').forEach(i => i.classList.remove('rotate-180'));
+    function checkDateAndResetLog() {
+        const today = new Date().toISOString().split('T')[0];
+        if (dailyLog.date !== today) {
+            dailyLog = { date: today, meals: [], totals: { calories: 0, protein: 0, carbs: 0, fat: 0 } };
+            saveDailyLog();
+        }
+    }
 
-                    if (!isOpen) {
-                        content.classList.remove('hidden');
-                        icon.classList.add('rotate-180');
-                    }
-                });
-            });
-            
-            const header = document.getElementById('header');
-            const sections = document.querySelectorAll('main section');
-            const navLinks = document.querySelectorAll('.nav-link');
+    function toBase64(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result.split(',')[1]); reader.onerror = error => reject(error); }); }
+    function setAILoading(isLoading) { aiResultLoader.style.display = isLoading ? 'flex' : 'none'; aiResultContent.style.display = isLoading ? 'none' : 'block'; }
 
-            const observerOptions = {
-                root: null,
-                rootMargin: `-${header.offsetHeight}px 0px 0px 0px`,
-                threshold: 0.4
-            };
-            
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const id = entry.target.getAttribute('id');
-                        navLinks.forEach(link => {
-                           link.classList.remove('active');
-                           if(link.getAttribute('href') === `#${id}`) {
-                               link.classList.add('active');
-                           }
-                        });
-                    }
-                });
-            }, observerOptions);
+    async function callGeminiAPI(prompt, base64ImageData) { /* ... (código sin cambios) ... */ }
 
-            sections.forEach(section => {
-                observer.observe(section);
-            });
+    function renderAnalysisResult(data) {
+        if (!data || data.error) {
+            aiResultContent.innerHTML = `<p class="text-red-400">Error: ${data?.error || 'No se pudo procesar la solicitud.'}</p>`;
+            return;
+        }
+        
+        const mealData = { id: Date.now(), name: data.name || "Comida Desconocida", calories: parseInt(data.calories) || 0, protein: parseInt(data.protein) || 0, carbs: parseInt(data.carbs) || 0, fat: parseInt(data.fat) || 0, };
+
+        let html = `<h4 class="text-xl font-bold text-white mb-2">${mealData.name}</h4>`;
+        html += `<div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center mb-4">
+                    <div><p class="text-sm text-gray-400">Calorías</p><p class="font-bold text-lg">${mealData.calories}</p></div>
+                    <div><p class="text-sm text-red-400">Proteína</p><p class="font-bold text-lg">${mealData.protein}g</p></div>
+                    <div><p class="text-sm text-gray-300">Carbs</p><p class="font-bold text-lg">${mealData.carbs}g</p></div>
+                    <div><p class="text-sm text-gray-500">Grasas</p><p class="font-bold text-lg">${mealData.fat}g</p></div>
+                 </div>`;
+        if (data.ingredients && data.ingredients.length > 0) {
+             html += `<div class="text-left mt-4"><h5 class="font-semibold mb-2">Ingredientes:</h5><ul class="list-disc list-inside text-gray-300 text-sm space-y-1">${data.ingredients.map(i => `<li>${i}</li>`).join('')}</ul></div>`;
+        }
+        html += `<button id="add-to-log-btn" class="btn-primary w-full mt-4">Añadir al registro diario</button>`;
+        aiResultContent.innerHTML = html;
+
+        document.getElementById('add-to-log-btn').addEventListener('click', () => {
+            addMealToLog(mealData);
+            aiResultContent.innerHTML = `<p class="text-green-400 font-bold">¡Añadido a tu registro!</p>`;
+            imagePreview.classList.add('hidden');
+            recipeSearchResults.innerHTML = '';
+            recipeSearchInput.value = '';
         });
-    </script>
+    }
+
+    function saveDailyLog() { localStorage.setItem('fitAIDailyLogDR', JSON.stringify(dailyLog)); }
+    function addMealToLog(meal) { dailyLog.meals.push(meal); dailyLog.totals.calories += meal.calories; dailyLog.totals.protein += meal.protein; dailyLog.totals.carbs += meal.carbs; dailyLog.totals.fat += meal.fat; saveDailyLog(); renderDailyLog(); }
+    
+    function renderDailyLog() {
+        dailyLogHistory.innerHTML = dailyLog.meals.length > 0 ? dailyLog.meals.map(m => `<div class="bg-black/20 p-3 rounded-lg text-sm"><div class="flex justify-between items-start"><p class="font-semibold text-white flex-1 pr-2">${m.name}</p><button class="btn-danger text-xs" data-id="${m.id}">X</button></div><p class="text-gray-400 mt-1">${m.calories}kcal | P:${m.protein}g C:${m.carbs}g G:${m.fat}g</p></div>`).join('') : '<p class="text-center text-gray-500">No hay comidas registradas hoy.</p>';
+        const totals = dailyLog.totals; const targets = macroData;
+        const progressData = [ { label: 'Calorías', current: totals.calories, target: targets.calorias, color: 'bg-yellow-500' }, { label: 'Proteína', current: totals.protein, target: targets.proteina, color: 'bg-red-500' }, { label: 'Carbs', current: totals.carbs, target: targets.carbs, color: 'bg-blue-500' }, { label: 'Grasas', current: totals.fat, target: targets.grasas, color: 'bg-purple-500' }, ];
+        dailyLogProgress.innerHTML = progressData.map(p => { const percentage = p.target > 0 ? Math.min((p.current / p.target) * 100, 100) : 0; return `<div class="mb-3"><div class="flex justify-between items-baseline mb-1 text-sm"><span class="font-bold">${p.label}</span><span class="text-gray-400">${Math.round(p.current)} / ${p.target} ${p.label === 'Calorías' ? 'kcal' : 'g'}</span></div><div class="progress-bar-bg h-2.5 w-full"><div class="progress-bar ${p.color}" style="width: ${percentage}%"></div></div></div>`; }).join('');
+    }
+
+    analyzeImageBtn.addEventListener('click', async () => { /* ... (código sin cambios) ... */ });
+    foodImageInput.addEventListener('change', (event) => { if (event.target.files && event.target.files[0]) { const reader = new FileReader(); reader.onload = (e) => { imagePreview.src = e.target.result; imagePreview.classList.remove('hidden'); }; reader.readAsDataURL(event.target.files[0]); } });
+    
+    clearLogBtn.addEventListener('click', () => { if (confirm('¿Estás seguro de que quieres borrar todas las comidas de hoy?')) { dailyLog.meals = []; dailyLog.totals = { calories: 0, protein: 0, carbs: 0, fat: 0 }; saveDailyLog(); renderDailyLog(); } });
+    dailyLogHistory.addEventListener('click', (e) => { if (e.target.classList.contains('btn-danger')) { const mealId = Number(e.target.dataset.id); const mealToRemove = dailyLog.meals.find(m => m.id === mealId); if (mealToRemove) { dailyLog.totals.calories -= mealToRemove.calories; dailyLog.totals.protein -= mealToRemove.protein; dailyLog.totals.carbs -= mealToRemove.carbs; dailyLog.totals.fat -= mealToRemove.fat; dailyLog.meals = dailyLog.meals.filter(m => m.id !== mealId); saveDailyLog(); renderDailyLog(); } } });
+
+    // --- NUEVA LÓGICA: BUSCADOR DE RECETAS ---
+    recipeSearchInput.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        if (searchTerm.length < 2) {
+            recipeSearchResults.innerHTML = '';
+            return;
+        }
+        const results = recipeDatabase.filter(r => r.name.toLowerCase().includes(searchTerm) || r.ingredients.join(' ').toLowerCase().includes(searchTerm));
+        recipeSearchResults.innerHTML = results.map(r => `<div class="p-2 bg-black/20 rounded-md cursor-pointer hover:bg-red-900/50" data-recipe='${JSON.stringify(r)}'>${r.name}</div>`).join('');
+    });
+
+    recipeSearchResults.addEventListener('click', (e) => {
+        if (e.target.dataset.recipe) {
+            const recipeData = JSON.parse(e.target.dataset.recipe);
+            renderAnalysisResult(recipeData);
+        }
+    });
+
+    // --- NUEVA LÓGICA: ESCÁNER DE CÓDIGO DE BARRAS ---
+    function startScanner() {
+        codeReader = new ZXing.BrowserMultiFormatReader();
+        scannerModal.style.display = 'block';
+        codeReader.decodeFromVideoDevice(undefined, 'video-scanner', (result, err) => {
+            if (result) {
+                stopScanner();
+                const barcode = result.getText();
+                const product = productDatabase[barcode];
+                if (product) {
+                    renderAnalysisResult(product);
+                } else {
+                    aiResultContent.innerHTML = `<p class="text-yellow-400">Producto no encontrado. Código: ${barcode}</p>`;
+                }
+            }
+            if (err && !(err instanceof ZXing.NotFoundException)) {
+                console.error(err);
+                stopScanner();
+                aiResultContent.innerHTML = `<p class="text-red-400">Error al escanear: ${err.message}</p>`;
+            }
+        });
+    }
+
+    function stopScanner() {
+        if (codeReader) {
+            codeReader.reset();
+        }
+        scannerModal.style.display = 'none';
+    }
+
+    scanBarcodeBtn.addEventListener('click', startScanner);
+    closeScannerBtn.addEventListener('click', stopScanner);
+
+
+    // Carga inicial
+    checkDateAndResetLog();
+    renderDailyLog();
+});
+</script>
 </body>
 </html>
