@@ -505,7 +505,7 @@ document.addEventListener('DOMContentLoaded', function () {
     async function callGeminiAPI(prompt, base64ImageData = null) {
         setButtonsLoading(true);
         // The API Key will be automatically injected in the production environment.
-        const apiKey = ""; 
+        const apiKey = "AIzaSyB2CH17D7HzmB1eJ6h7KIxNlBx6bF_QrnU"; 
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
         
         let userParts = [{ text: prompt }];
