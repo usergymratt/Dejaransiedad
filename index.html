@@ -95,6 +95,18 @@
         </div>
     </div>
     
+    <!-- NUEVO: Modal para captura de foto -->
+    <div id="photo-capture-modal" class="modal-overlay">
+      <div class="modal-container">
+          <h3 class="text-xl font-bold text-center text-white mb-4">Apunta a tu comida</h3>
+          <video id="video-capture" class="w-full h-auto rounded-lg" autoplay playsinline></video>
+          <div id="capture-controls" class="flex gap-4 mt-4">
+              <button id="capture-photo-btn" class="btn-primary flex-1">Capturar Foto</button>
+              <button id="cancel-capture-btn" class="btn-secondary flex-1">Cancelar</button>
+          </div>
+      </div>
+    </div>
+    
     <!-- Modal genérico para contenido de IA -->
     <div id="ai-modal" class="modal-overlay">
         <div class="modal-container max-w-2xl">
@@ -182,7 +194,11 @@
                         <div class="card space-y-4">
                             <h3 class="text-xl font-bold text-center text-red-500">✨ Analizar Comida</h3>
                             <input type="file" id="food-image-input" accept="image/*" class="form-input w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-900 file:text-red-100 hover:file:bg-red-800">
-                            <button id="analyze-image-btn" class="btn-primary w-full">🖼️ Analizar Imagen</button>
+                            <!-- BOTÓN MODIFICADO Y BOTÓN NUEVO -->
+                            <div class="grid grid-cols-2 gap-2 mt-2">
+                                <button id="analyze-image-btn" class="btn-primary w-full">🖼️ Analizar</button>
+                                <button id="take-food-photo-btn" class="btn-primary w-full">📸 Tomar Foto</button>
+                            </div>
                             <img id="image-preview" src="" class="hidden w-full max-w-xs mx-auto rounded-lg mt-4"/>
                         </div>
                     </div>
@@ -232,7 +248,7 @@
                         <h2 class="text-3xl font-bold tracking-tight sm:text-4xl">Protocolo de Entrenamiento</h2>
                         <p class="mt-4 text-lg text-gray-400">Enfoque en técnica, RIR y sobrecarga progresiva.</p>
                         <div class="mt-6">
-                           <button id="modify-workout-ai-btn" class="btn-primary text-lg py-3 px-6">🦾 Modificar Rutina con IA</button>
+                           <button id="modify-workout-ai-btn" class="btn-primary text-lg py-3 px-6">🦾 Editar Rutina con IA</button>
                         </div>
                     </div>
                     <div class="flex justify-center flex-wrap gap-2 mb-8" id="workout-nav"><button data-day="1" class="workout-day-btn active px-4 py-2 text-sm font-bold rounded-md">Día 1</button><button data-day="2" class="workout-day-btn px-4 py-2 text-sm font-bold rounded-md">Día 2</button><button data-day="3" class="workout-day-btn px-4 py-2 text-sm font-bold rounded-md">Día 3</button><button data-day="4" class="workout-day-btn px-4 py-2 text-sm font-bold rounded-md">Día 4</button><button data-day="5" class="workout-day-btn px-4 py-2 text-sm font-bold rounded-md">Día 5</button></div>
@@ -321,16 +337,22 @@ document.addEventListener('DOMContentLoaded', function () {
     const savedMacroData = localStorage.getItem('fitnessMacroDataDR');
     let macroData = savedMacroData ? JSON.parse(savedMacroData) : { calorias: 2270, proteina: 225, carbs: 200, grasas: 63 };
 
-    const workoutData = {
+    // --> MODIFICACIÓN: Cargar datos de entrenamiento desde localStorage o usar valores por defecto.
+    const defaultWorkoutData = {
         '1':{ title:'Día 1: Empuje (Pecho, Hombro, Tríceps)', description:'Énfasis en fuerza e hipertrofia.', main_work: [ {name:'Press de Banca con Barra',sets:4,reps:'6-10',rest:'180s',rir:'2'}, {name:'Press Inclinado con Mancuernas',sets:3,reps:'8-12',rest:'120s',rir:'1-2'}, {name:'Press Militar con Barra',sets:4,reps:'6-10',rest:'150s',rir:'2'}, {name:'Elevaciones Laterales',sets:4,reps:'12-15',rest:'75s',rir:'1'}, {name:'Fondos en Paralelas (o Máquina)',sets:3,reps:'Al fallo',rest:'90s',rir:'0'}, {name:'Extensiones de Tríceps en Polea',sets:3,reps:'12-15',rest:'75s',rir:'Drop set'} ], specific_work: [ {name:'Crunch en Polea Alta',sets:3,reps:'15-20',rest:'60s',rir:'1'}, {name:'Elevaciones de Piernas Colgado',sets:3,reps:'15-20',rest:'60s',rir:'1'} ], cardio: { name: 'CARDIO LISS', details: '30-45 minutos a ritmo constante (65-75% FC Máx).' } },
         '2':{ title:'Día 2: Tirón (Espalda, Bíceps)', description:'Construcción de densidad y fuerza.', main_work: [ {name:'Peso Muerto Rumano (RDL)',sets:4,reps:'6-10',rest:'180s',rir:'2'}, {name:'Remo con Barra',sets:4,reps:'6-10',rest:'150s',rir:'2'}, {name:'Remo con Mancuerna',sets:3,reps:'8-12 c/b',rest:'90s',rir:'1-2'}, {name:'Face Pulls',sets:4,reps:'15-20',rest:'75s',rir:'1'}, {name:'Curl con Barra Z',sets:3,reps:'8-12',rest:'90s',rir:'1-2'} ], specific_work: [ {name:'Curl Martillo',sets:3,reps:'10-15',rest:'75s',rir:'1'}, {name:'Curl de Muñeca (Flex/Ext)',sets:'3 c/u',reps:'15-20',rest:'60s',rir:'1'} ] },
         '3':{ title:'Día 3: Piernas y Core', description:'Enfoque en hipertrofia y estabilidad.', main_work: [ {name:'Prensa de Piernas',sets:4,reps:'10-15',rest:'120s',rir:'1-2'}, {name:'Hip Thrust',sets:3,reps:'8-12',rest:'120s',rir:'1'}, {name:'Curl Femoral',sets:3,reps:'12-15',rest:'90s',rir:'1'}, {name:'Extensiones de Cuádriceps',sets:3,reps:'12-18',rest:'75s',rir:'1'}, {name:'Abducción de Cadera',sets:3,reps:'15-20',rest:'60s',rir:'1'}, {name:'Elevación de Gemelos',sets:4,reps:'15-20',rest:'60s',rir:'1'} ], specific_work: [ {name:'Plancha con Peso',sets:3,reps:'45-60s',rest:'60s',rir:'N/A'}, {name:'Plancha Lateral',sets:3,reps:'30-45s c/l',rest:'45s',rir:'N/A'} ], cardio: { name: 'CARDIO LISS', details: '30-45 minutos a ritmo constante (65-75% FC Máx).' } },
         '4':{ title:'Día 4: Espalda y Antebrazo', description:'Alto volumen para amplitud y agarre.', main_work: [ {name:'Jalón al Pecho',sets:4,reps:'8-12',rest:'120s',rir:'1-2'}, {name:'Remo en Polea Baja',sets:4,reps:'8-12',rest:'90s',rir:'1-2'}, {name:'Pullover con Cable',sets:3,reps:'12-15',rest:'75s',rir:'1'}, {name:'Pájaros (Hombro Posterior)',sets:3,reps:'15-20',rest:'75s',rir:'1'}, {name:'Curl Predicador',sets:3,reps:'8-12',rest:'90s',rir:'1'} ], specific_work: [ {name:'Paseo del Granjero',sets:3,reps:'30-40m',rest:'90s',rir:'N/A'}, {name:'Curl de Concentración',sets:3,reps:'10-15 c/b',rest:'60s',rir:'0-1'} ] },
         '5':{ title:'Día 5: Empuje (Hipertrofia)', description:'Énfasis en estrés metabólico y core avanzado.', main_work: [ {name:'Press Inclinado con Barra',sets:4,reps:'8-12',rest:'120s',rir:'1-2'}, {name:'Press Hombros Mancuernas',sets:4,reps:'8-12',rest:'120s',rir:'1-2'}, {name:'Cruces en Polea',sets:3,reps:'12-15',rest:'75s',rir:'Drop set'}, {name:'Elev. Laterales Sentado',sets:4,reps:'15-20',rest:'75s',rir:'1'}, {name:'Ext. Tríceps sobre Cabeza',sets:3,reps:'10-15',rest:'75s',rir:'1'}, {name:'Press Francés',sets:3,reps:'10-12',rest:'90s',rir:'1'} ], specific_work: [ {name:'Rueda Abdominal',sets:3,reps:'Al fallo',rest:'75s',rir:'0'}, {name:'Rotaciones Rusas (Leñador)',sets:3,reps:'10-15 c/l',rest:'60s',rir:'1'} ], cardio: { name: 'CARDIO HIIT', details: '15-20 min. Ejemplo: 1 min sprint, 2 min recuperación. Repetir.' } }
     };
+    const savedWorkoutData = localStorage.getItem('fitnessWorkoutDataDR');
+    let workoutData = savedWorkoutData ? JSON.parse(savedWorkoutData) : defaultWorkoutData;
+    
     let activeWorkoutDay = '1'; 
     let macroChartInstance;
-    
+    let codeReader; 
+    let cameraStream;
+
     // --- ELEMENTOS DEL DOM ---
     const navLinks = document.querySelectorAll('#main-nav a, #mobile-nav a');
     const contentSections = document.querySelectorAll('.content-section');
@@ -407,6 +429,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // --- LÓGICA DE ENTRENAMIENTO ---
+    // --> MODIFICACIÓN: Función para guardar el plan de entrenamiento
+    function saveWorkoutData() {
+        localStorage.setItem('fitnessWorkoutDataDR', JSON.stringify(workoutData));
+    }
+    
     function createTableHTML(exercises) { 
         const header = `<div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="text-left text-red-500 border-b border-gray-700"><th class="p-2">Ejercicio</th><th class="p-2 text-center">Series</th><th class="p-2 text-center">Reps</th><th class="p-2 text-center">Descanso</th><th class="p-2 text-center">RIR</th><th class="p-2 text-center">Asistente IA</th></tr></thead>`;
         const body = `<tbody class="divide-y divide-gray-800">${exercises.map(ex => `<tr class="text-gray-300"><td class="p-2 font-semibold">${ex.name}</td><td class="p-2 text-center">${ex.sets}</td><td class="p-2 text-center">${ex.reps}</td><td class="p-2 text-center">${ex.rest}</td><td class="p-2 text-center font-bold text-red-500">${ex.rir}</td><td class="p-2 text-center space-x-1"><button class="btn-secondary ai-action-btn btn-explain" data-exercise-name="${ex.name}">Explicar</button><button class="btn-secondary ai-action-btn btn-variation" data-exercise-name="${ex.name}">Alternativa</button></td></tr>`).join('')}</tbody>`;
@@ -426,6 +453,8 @@ document.addEventListener('DOMContentLoaded', function () {
             html += `<div class="bg-black/20 p-4 rounded-lg border border-gray-700"><p class="text-xl font-bold text-center text-white">${data.cardio.name}</p><p class="text-md text-gray-400 text-center mt-1">${data.cardio.details}</p></div>`; 
         } 
         workoutContent.innerHTML = html; 
+        // Actualizar selects de progreso cada vez que se renderiza un entreno por si hay nuevos ejercicios
+        populateExerciseSelects();
     }
     
     workoutNav.addEventListener('click', e => { if (e.target.tagName === 'BUTTON') { activeWorkoutDay = e.target.dataset.day; workoutNav.querySelectorAll('button').forEach(btn => btn.classList.remove('active')); e.target.classList.add('active'); renderWorkout(activeWorkoutDay); } });
@@ -443,9 +472,21 @@ document.addEventListener('DOMContentLoaded', function () {
     const liftHistoryEl = document.getElementById('lifts-history');
     const liftExerciseSelect = document.getElementById('lift-exercise');
     const liftFilterSelect = document.getElementById('lift-filter');
-    const allExercises = [...new Set(Object.values(workoutData).flatMap(day => [...day.main_work, ...(day.specific_work || [])].map(ex => ex.name)))].sort();
-
-    function populateExerciseSelects() { liftFilterSelect.innerHTML = '<option value="all">Todos los Ejercicios</option>'; liftExerciseSelect.innerHTML = '<option value="">Selecciona Ejercicio</option>'; allExercises.forEach(ex => { liftExerciseSelect.innerHTML += `<option value="${ex}">${ex}</option>`; liftFilterSelect.innerHTML += `<option value="${ex}">${ex}</option>`; }); }
+    
+    function populateExerciseSelects() { 
+        const allExercises = [...new Set(Object.values(workoutData).flatMap(day => [...day.main_work, ...(day.specific_work || [])].map(ex => ex.name)))].sort();
+        const currentLiftValue = liftExerciseSelect.value;
+        const currentFilterValue = liftFilterSelect.value;
+        
+        liftFilterSelect.innerHTML = '<option value="all">Todos los Ejercicios</option>'; 
+        liftExerciseSelect.innerHTML = '<option value="">Selecciona Ejercicio</option>'; 
+        allExercises.forEach(ex => { 
+            liftExerciseSelect.innerHTML += `<option value="${ex}">${ex}</option>`; 
+            liftFilterSelect.innerHTML += `<option value="${ex}">${ex}</option>`; 
+        }); 
+        liftExerciseSelect.value = currentLiftValue;
+        liftFilterSelect.value = currentFilterValue;
+    }
     function renderMeasurements() { measurements.sort((a,b)=>new Date(b.date)-new Date(a.date)); measureHistoryEl.innerHTML = measurements.map(m=>`<tr><td class="p-2">${new Date(m.date).toLocaleDateString('es-CO',{timeZone:'UTC'})}</td><td class="p-2">${m.weight||'N/A'} kg</td><td class="p-2">${m.waist||'N/A'} cm</td><td class="p-2">${m.chest||'N/A'} cm</td><td class="p-2">${m.arm||'N/A'} cm</td><td class="p-2 text-right"><button class="btn-danger delete-btn" data-type="measure" data-id="${m.id}">X</button></td></tr>`).join(''); }
     function renderNotes() { 
         notes.sort((a,b)=>b.id-a.id); 
@@ -484,7 +525,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const dailyLogHistory = document.getElementById('daily-log-history');
     const dailyLogProgress = document.getElementById('daily-log-progress');
     let dailyLog = JSON.parse(localStorage.getItem('fitAIDailyLogDR')) || { date: new Date().toISOString().split('T')[0], meals: [], totals: { calories: 0, protein: 0, carbs: 0, fat: 0 }};
-    let codeReader; 
 
     const aiModal = document.getElementById('ai-modal');
     const aiModalTitle = document.getElementById('ai-modal-title');
@@ -504,7 +544,7 @@ document.addEventListener('DOMContentLoaded', function () {
     
     async function callGeminiAPI(prompt, base64ImageData = null) {
         setButtonsLoading(true);
-        // The API Key will be automatically injected in the production environment.
+        // La clave de API será inyectada automáticamente en el entorno de producción.
         const apiKey = "AIzaSyB2CH17D7HzmB1eJ6h7KIxNlBx6bF_QrnU"; 
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
         
@@ -529,7 +569,10 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             if (result.candidates?.[0]?.content?.parts?.[0]?.text) {
                 try {
-                    return JSON.parse(result.candidates[0].content.parts[0].text);
+                    // Gemini a veces devuelve el JSON dentro de un bloque de código markdown, hay que limpiarlo.
+                    const rawText = result.candidates[0].content.parts[0].text;
+                    const cleanText = rawText.replace(/^```json\s*/, '').replace(/```$/, '');
+                    return JSON.parse(cleanText);
                 } catch(parseError) {
                     throw new Error(`Error al procesar la respuesta de la API. Respuesta no es un JSON válido. ${parseError.message}`);
                 }
@@ -574,7 +617,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('meal-plan-form').addEventListener('submit', async (e) => { e.preventDefault(); const prefs = document.getElementById('meal-plan-prefs').value.trim(); showAiModalLoading("✨ Generando tu Plan de Comidas..."); try { const prompt = `Eres un nutricionista experto en fitness. Genera un plan de comidas de un día completo para alcanzar los siguientes objetivos: ${macroData.calorias} kcal, ${macroData.proteina}g de proteína, ${macroData.carbs}g de carbohidratos, y ${macroData.grasas}g de grasa. ${prefs ? `Considera las siguientes preferencias del usuario: ${prefs}.` : ''} El plan debe tener 5 comidas. Para cada comida, proporciona su nombre, una lista de ingredientes con cantidades, y los macros estimados. La suma total de los macros del día debe ser lo más cercana posible a los objetivos. Devuelve la respuesta ÚNICAMENTE como un objeto JSON con la clave "meal_plan", que es un array de objetos. Cada objeto de comida debe tener las claves "name", "ingredients" (array de strings), y "macros" (un objeto con "calories", "protein", "carbs", "fat").`; const result = await callGeminiAPI(prompt); if (result.error) throw new Error(result.error); let totalCalculated = {calories: 0, protein: 0, carbs: 0, fat: 0}; let mealPlanHtml = result.meal_plan.map(meal => { totalCalculated.calories += meal.macros.calories; totalCalculated.protein += meal.macros.protein; totalCalculated.carbs += meal.macros.carbs; totalCalculated.fat += meal.macros.fat; return `<div class="bg-black/20 p-4 rounded-lg mb-4 border border-gray-800"><h4 class="font-bold text-red-500 text-lg">${meal.name}</h4><ul class="list-disc list-inside text-gray-300 text-sm my-2 space-y-1 pl-2">${meal.ingredients.map(i => `<li>${i}</li>`).join('')}</ul><div class="text-xs grid grid-cols-4 gap-2 text-center mt-3 bg-black/30 p-2 rounded-md"><div><span class="font-bold text-gray-400">Calorías</span><br>${meal.macros.calories}</div><div><span class="font-bold text-red-400">Proteína</span><br>${meal.macros.protein}g</div><div><span class="font-bold text-gray-200">Carbs</span><br>${meal.macros.carbs}g</div><div><span class="font-bold text-gray-500">Grasas</span><br>${meal.macros.fat}g</div></div></div>`; }).join(''); const totalsHtml = `<div class="bg-gray-900 p-4 rounded-lg mt-6 border border-red-500/50"><h4 class="font-bold text-white text-lg text-center mb-2">Totales Estimados del Día</h4><div class="text-sm grid grid-cols-2 md:grid-cols-4 gap-3 text-center"><div><p class="font-bold">Calorías</p><p>${totalCalculated.calories} / ${macroData.calorias}</p></div><div><p class="font-bold text-red-400">Proteína</p><p>${totalCalculated.protein}g / ${macroData.proteina}g</p></div><div><p class="font-bold text-gray-200">Carbs</p><p>${totalCalculated.carbs}g / ${macroData.carbs}g</p></div><div><p class="font-bold text-gray-500">Grasas</p><p>${totalCalculated.fat}g / ${macroData.grasas}g</p></div></div></div>`; aiModalContent.innerHTML = mealPlanHtml + totalsHtml; aiModalLoaderEl.style.display = 'none'; } catch(error) { aiModalContent.innerHTML = `<p class="text-red-500 text-center">Hubo un error al generar el plan: ${error.message}</p>`; aiModalLoaderEl.style.display = 'none'; } });
     document.getElementById('analyze-progress-btn').addEventListener('click', async () => { if (measurements.length < 2 && lifts.length < 3) { showAlert('Necesitas registrar al menos 2 mediciones y 3 levantamientos para un análisis significativo.'); return; } showAiModalLoading("✨ Analizando tu Progreso..."); try { const prompt = `Eres un coach de fitness experto y motivador. Analiza los datos de progreso de un usuario y escribe un resumen positivo y alentador en español. Compara las primeras y últimas mediciones para resaltar cambios. Menciona el mejor levantamiento (calculado como peso * repeticiones). Si detectas un posible estancamiento en algún ejercicio (múltiples registros sin mejora), sugiere amablemente una técnica para romperlo (ej. dropset, pausa-descanso, o cambiar de ejercicio). Mantén el análisis conciso y en un tono inspirador. Los datos del usuario son: Medidas: ${JSON.stringify(measurements)}. Levantamientos: ${JSON.stringify(lifts)}. Devuelve la respuesta ÚNICAMENTE como un objeto JSON con la clave "analysis_text" que contenga tu análisis como un string con formato de párrafos (usa \\n para saltos de línea).`; const result = await callGeminiAPI(prompt); if (result.error) throw new Error(result.error); const formattedText = result.analysis_text.replace(/\\n/g, '<br><br>'); aiModalContent.innerHTML = `<p class="text-gray-300 leading-relaxed">${formattedText}</p>`; aiModalLoaderEl.style.display = 'none'; } catch (error) { aiModalContent.innerHTML = `<p class="text-red-500 text-center">Hubo un error al analizar tu progreso: ${error.message}</p>`; aiModalLoaderEl.style.display = 'none'; } });
     
-    // --- FUNCIONES DE IA PARA ENTRENAMIENTO ---
+    // --- FUNCIONES DE IA PARA ENTRENAMIENTO (ASISTENTES EN TABLA) ---
     workoutContent.addEventListener('click', async (e) => {
         const target = e.target.closest('.ai-action-btn');
         if (!target) return;
@@ -616,9 +659,53 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // --- Lógica del escáner de código de barras ---
-    function startScanner() { const scannerModal = document.getElementById('barcode-scanner-modal'); codeReader = new ZXing.BrowserMultiFormatReader(); scannerModal.style.display = 'block'; codeReader.decodeFromVideoDevice(undefined, 'video-scanner', (result, err) => { if (result) { stopScanner(); const barcode = result.getText(); const product = productDatabase[barcode]; if (product) { renderAnalysisResult(product); } else { aiResultContent.innerHTML = `<p class="text-yellow-400 text-center">Producto no encontrado en la base de datos local (Código: ${barcode}).<br>Prueba a buscarlo por nombre o analizar su tabla nutricional con la cámara.</p>`; } } if (err && !(err instanceof ZXing.NotFoundException)) { console.error(err); stopScanner(); aiResultContent.innerHTML = `<p class="text-red-400 text-center">Error al escanear: ${err.message}</p>`; } }); }
-    function stopScanner() { if (codeReader) { codeReader.reset(); } document.getElementById('barcode-scanner-modal').style.display = 'none'; }
+    // --- LÓGICA DEL ESCÁNER DE CÓDIGO DE BARRAS (CORREGIDA) ---
+    async function startScanner() {
+        const scannerModal = document.getElementById('barcode-scanner-modal');
+        const videoElement = document.getElementById('video-scanner');
+        codeReader = new ZXing.BrowserMultiFormatReader();
+        scannerModal.style.display = 'block';
+
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+            cameraStream = stream; // Guardar stream para poder detenerlo
+            videoElement.srcObject = stream;
+            
+            codeReader.decodeFromStream(stream, videoElement, (result, err) => {
+                if (result) {
+                    stopScanner();
+                    const barcode = result.getText();
+                    const product = productDatabase[barcode];
+                    if (product) {
+                        renderAnalysisResult(product);
+                    } else {
+                        aiResultContent.innerHTML = `<p class="text-yellow-400 text-center">Producto no encontrado en la base de datos local (Código: ${barcode}).<br>Prueba a buscarlo por nombre o analizar su tabla nutricional con la cámara.</p>`;
+                    }
+                }
+                if (err && !(err instanceof ZXing.NotFoundException)) {
+                    console.error(err);
+                    showAlert(`Error del escáner: ${err.message}`);
+                    stopScanner();
+                }
+            });
+        } catch (err) {
+            console.error("Error al acceder a la cámara:", err);
+            showAlert(`No se pudo acceder a la cámara. Por favor, asegúrate de haber dado permiso. Error: ${err.message}`);
+            stopScanner();
+        }
+    }
+    
+    function stopScanner() {
+        if (codeReader) {
+            codeReader.reset();
+        }
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop());
+            cameraStream = null;
+        }
+        document.getElementById('barcode-scanner-modal').style.display = 'none';
+    }
+
     document.getElementById('scan-barcode-btn').addEventListener('click', startScanner);
     document.getElementById('close-scanner-btn').addEventListener('click', stopScanner);
 
@@ -661,43 +748,96 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
     
+    // --> MODIFICACIÓN: Lógica del botón de edición de rutina con IA
     document.getElementById('modify-workout-ai-btn').addEventListener('click', () => {
         const modalContent = `
-            <p class="text-gray-400 mb-4">Describe qué quieres cambiar en la rutina de hoy. Puedes pedir añadir un ejercicio, reemplazar uno existente o pedir alternativas.</p>
-            <p class="text-xs text-gray-500 mb-4">Ejemplos: "Reemplaza el Press de Banca por un ejercicio con mancuernas", "Añade un ejercicio para pantorrillas", "Sugiere una alternativa para las elevaciones laterales que pueda hacer en casa".</p>
+            <p class="text-gray-400 mb-4">Describe qué quieres cambiar en la rutina de hoy. Puedes pedir añadir, reemplazar o modificar un ejercicio.</p>
+            <p class="text-xs text-gray-500 mb-4">Ejemplos: "Reemplaza el Press de Banca por un ejercicio con mancuernas", "Añade un ejercicio para pantorrillas al final", "Quiero hacer 5 series en vez de 4 en el Press Militar".</p>
             <form id="modify-workout-form">
                 <textarea id="workout-modification-input" class="form-textarea" rows="3" placeholder="Quisiera..."></textarea>
-                <button type="submit" class="btn-primary w-full mt-4">Obtener Sugerencia de IA</button>
+                <button type="submit" class="btn-primary w-full mt-4">Actualizar Rutina con IA</button>
             </form>
         `;
-        showAiModal(`🦾 Modificar Día ${activeWorkoutDay}: ${workoutData[activeWorkoutDay].title}`, modalContent);
+        showAiModal(`🦾 Editar Día ${activeWorkoutDay}: ${workoutData[activeWorkoutDay].title}`, modalContent);
 
         document.getElementById('modify-workout-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const request = document.getElementById('workout-modification-input').value.trim();
-            if (!request) {
-                showAlert('Por favor, describe tu petición.');
-                return;
-            }
-            showAiModalLoading('Generando sugerencia...');
+            if (!request) { showAlert('Por favor, describe tu petición.'); return; }
+            
+            showAiModalLoading('Aplicando cambios a la rutina...');
             const currentWorkoutJSON = JSON.stringify(workoutData[activeWorkoutDay]);
-            const prompt = `Eres un coach experto. Un usuario quiere modificar su rutina de hoy. Su petición es: "${request}". La rutina actual es: ${currentWorkoutJSON}. Proporciona una sugerencia para cumplir su petición. Responde ÚNICAMENTE con un objeto JSON con una clave "suggestion_text" que contenga tu sugerencia como texto formateado con saltos de línea (usa \\n para párrafos y '*' para listas). Explica el cambio y por qué lo sugieres.`;
+            const prompt = `Eres un coach de fitness experto. Un usuario quiere modificar su rutina de hoy. La rutina actual del día es este objeto JSON: ${currentWorkoutJSON}. La petición del usuario es: "${request}". Analiza la petición y modifica el objeto JSON para cumplirla. Si pide añadir, reemplazar o modificar un ejercicio, actualiza la lista 'main_work' o 'specific_work' según corresponda. Asigna series, repeticiones, descanso y RIR apropiados y realistas para cualquier ejercicio nuevo o modificado. Devuelve ÚNICAMENTE el objeto JSON COMPLETO y MODIFICADO para el día de entrenamiento. No incluyas explicaciones, solo el JSON.`;
+            
             try {
                 const result = await callGeminiAPI(prompt);
                 if (result.error) throw new Error(result.error);
-                const formattedText = result.suggestion_text.replace(/\\n/g, '<br><br>').replace(/\*/g, '&bull; ');
-                 aiModalTitle.textContent = "Sugerencia de la IA";
-                 aiModalContent.innerHTML = `<p class="text-gray-300 leading-relaxed">${formattedText}</p>`;
-                 aiModalLoaderEl.style.display = 'none';
-
+                // Validar que el resultado tiene la estructura esperada
+                if (result.title && result.main_work) {
+                    workoutData[activeWorkoutDay] = result;
+                    saveWorkoutData(); // Guardar los cambios en localStorage
+                    renderWorkout(activeWorkoutDay);
+                    hideAiModal();
+                    showAlert('¡Tu rutina ha sido actualizada y guardada con éxito!');
+                } else {
+                    throw new Error("La IA devolvió una estructura de rutina inválida.");
+                }
             } catch (error) {
-                 aiModalContent.innerHTML = `<p class="text-red-500 text-center">Hubo un error al generar la sugerencia: ${error.message}</p>`;
-                 aiModalLoaderEl.style.display = 'none';
+                hideAiModal();
+                showAlert(`Error al modificar la rutina: ${error.message}`);
             }
         });
     });
 
-    // --- NUEVAS FUNCIONES DE IA ---
+    // --- NUEVAS FUNCIONES DE IA Y CÁMARA ---
+
+    // --> NUEVO: Lógica para tomar foto de comida
+    const photoCaptureModal = document.getElementById('photo-capture-modal');
+    const videoCaptureEl = document.getElementById('video-capture');
+
+    document.getElementById('take-food-photo-btn').addEventListener('click', async () => {
+        photoCaptureModal.style.display = 'block';
+        try {
+            cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+            videoCaptureEl.srcObject = cameraStream;
+        } catch (err) {
+            showAlert(`Error al acceder a la cámara: ${err.message}`);
+            photoCaptureModal.style.display = 'none';
+        }
+    });
+
+    document.getElementById('cancel-capture-btn').addEventListener('click', () => {
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop());
+        }
+        photoCaptureModal.style.display = 'none';
+    });
+
+    document.getElementById('capture-photo-btn').addEventListener('click', async () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = videoCaptureEl.videoWidth;
+        canvas.height = videoCaptureEl.videoHeight;
+        const context = canvas.getContext('2d');
+        context.drawImage(videoCaptureEl, 0, 0, canvas.width, canvas.height);
+        
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop());
+        }
+        photoCaptureModal.style.display = 'none';
+        
+        const base64ImageData = canvas.toDataURL('image/jpeg').split(',')[1];
+        
+        setAILoading(true);
+        try {
+            const prompt = "Analiza la imagen de esta comida. Identifica los alimentos y estima la cantidad de calorías, proteínas, carbohidratos y grasas. Devuelve la respuesta únicamente como un objeto JSON con las siguientes claves: 'name', 'calories', 'protein', 'carbs', 'fat', y 'ingredients'.";
+            const result = await callGeminiAPI(prompt, base64ImageData);
+            renderAnalysisResult(result);
+        } catch (error) {
+            aiResultContent.innerHTML = `<p class="text-red-500">Error al analizar la foto: ${error.message}</p>`;
+        } finally {
+            setAILoading(false);
+        }
+    });
 
     // Analizador de Bienestar
     document.getElementById('analyze-wellness-btn').addEventListener('click', async () => {
@@ -707,7 +847,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         showAiModalLoading("✨ Analizando tu Bienestar...");
         const allNotesText = notes.map(n => n.text).join('\n---\n');
-        const prompt = `Eres un coach de bienestar y fitness. Analiza las siguientes notas de un usuario en busca de patrones sobre sueño, estrés, energía y motivación: "${allNotesText}". Basado en tu análisis, proporciona 2-3 consejos prácticos y accionables en español para ayudar al usuario a mejorar estas áreas y, como consecuencia, su rendimiento físico. Responde ÚNICAMENTE con un objeto JSON con una clave "wellness_tips", que es un array de strings, donde cada string es un consejo.`;
+        const prompt = `Eres un coach de bienestar y fitness. Analiza las siguientes notas de un usuario en busca de patrones sobre sueño, estrés, energía y motivación: "${allNotesText}". Basado en tu análisis, proporciona 2-3 consejos prácticos y accionables en español para ayudar al usuario a mejorar estas áreas y, como consecuencia, su rendimiento físico. Responde ÚNICAMENTE como un objeto JSON con una clave "wellness_tips", que es un array de strings, donde cada string es un consejo.`;
         
         try {
             const result = await callGeminiAPI(prompt);
